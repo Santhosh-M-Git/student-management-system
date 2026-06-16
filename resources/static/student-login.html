@@ -1,0 +1,531 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Student Login | SMS</title>
+    <link href="https://fonts.googleapis.com/css2?family=Outfit:wght@300;400;600;700&display=swap" rel="stylesheet">
+    <style>
+        * { margin: 0; padding: 0; box-sizing: border-box; }
+
+        :root {
+            --green: #00ff88;
+            --cyan: #00d2ff;
+            --bg: #020f0a;
+            --card: rgba(0,255,136,0.04);
+            --border: rgba(0,255,136,0.15);
+            --input-bg: rgba(255,255,255,0.06);
+        }
+
+        body {
+            font-family: 'Outfit', sans-serif;
+            height: 100vh;
+            display: flex;
+            justify-content: center;
+            align-items: center;
+            background: var(--bg);
+            overflow: hidden;
+            position: relative;
+        }
+
+        /* Animated background grid */
+        .bg-grid {
+            position: absolute;
+            inset: 0;
+            background-image:
+                linear-gradient(rgba(0,255,136,0.03) 1px, transparent 1px),
+                linear-gradient(90deg, rgba(0,255,136,0.03) 1px, transparent 1px);
+            background-size: 50px 50px;
+            animation: gridMove 20s linear infinite;
+        }
+
+        @keyframes gridMove {
+            0% { transform: translateY(0); }
+            100% { transform: translateY(50px); }
+        }
+
+        /* Glow orbs */
+        .orb {
+            position: absolute;
+            border-radius: 50%;
+            filter: blur(80px);
+            opacity: 0.15;
+            animation: pulse 6s ease-in-out infinite;
+        }
+        .orb-1 { width: 400px; height: 400px; background: var(--green); top: -100px; left: -100px; }
+        .orb-2 { width: 300px; height: 300px; background: var(--cyan); bottom: -80px; right: -80px; animation-delay: 3s; }
+
+        @keyframes pulse {
+            0%, 100% { transform: scale(1); opacity: 0.15; }
+            50% { transform: scale(1.1); opacity: 0.25; }
+        }
+
+        /* Particles canvas */
+        #particles-js {
+            position: absolute;
+            inset: 0;
+            z-index: 1;
+        }
+
+        .login-wrapper {
+            position: relative;
+            z-index: 10;
+            width: 420px;
+        }
+
+        /* Top label */
+        .top-label {
+            text-align: center;
+            margin-bottom: 24px;
+        }
+        .top-label .badge {
+            display: inline-flex;
+            align-items: center;
+            gap: 8px;
+            background: rgba(0,255,136,0.08);
+            border: 1px solid rgba(0,255,136,0.2);
+            border-radius: 100px;
+            padding: 6px 16px;
+            font-size: 13px;
+            color: var(--green);
+            letter-spacing: 0.05em;
+        }
+        .badge-dot {
+            width: 6px; height: 6px;
+            border-radius: 50%;
+            background: var(--green);
+            animation: blink 1.5s ease-in-out infinite;
+        }
+        @keyframes blink {
+            0%, 100% { opacity: 1; }
+            50% { opacity: 0.3; }
+        }
+
+        /* Card */
+        .login-box {
+            background: var(--card);
+            border: 1px solid var(--border);
+            border-radius: 24px;
+            padding: 40px 36px;
+            backdrop-filter: blur(20px);
+            -webkit-backdrop-filter: blur(20px);
+            box-shadow: 0 0 60px rgba(0,255,136,0.06), inset 0 1px 0 rgba(255,255,255,0.05);
+            animation: slideUp 0.6s cubic-bezier(0.16, 1, 0.3, 1);
+        }
+
+        @keyframes slideUp {
+            from { opacity: 0; transform: translateY(30px); }
+            to { opacity: 1; transform: translateY(0); }
+        }
+
+        .login-box h2 {
+            font-size: 26px;
+            font-weight: 700;
+            color: #fff;
+            margin-bottom: 6px;
+            letter-spacing: -0.5px;
+        }
+
+        .login-box .subtitle {
+            font-size: 14px;
+            color: rgba(255,255,255,0.4);
+            margin-bottom: 32px;
+        }
+
+        /* Input group */
+        .field {
+            margin-bottom: 18px;
+        }
+
+        .field label {
+            display: block;
+            font-size: 12px;
+            font-weight: 600;
+            letter-spacing: 0.08em;
+            text-transform: uppercase;
+            color: rgba(255,255,255,0.5);
+            margin-bottom: 8px;
+        }
+
+        .input-wrap {
+            position: relative;
+        }
+
+        .input-icon {
+            position: absolute;
+            left: 14px;
+            top: 50%;
+            transform: translateY(-50%);
+            font-size: 16px;
+            opacity: 0.5;
+        }
+
+        input {
+            width: 100%;
+            padding: 13px 44px 13px 42px;
+            background: var(--input-bg);
+            border: 1px solid rgba(255,255,255,0.1);
+            border-radius: 12px;
+            color: #fff;
+            font-family: 'Outfit', sans-serif;
+            font-size: 15px;
+            outline: none;
+            transition: all 0.3s;
+        }
+
+        input::placeholder {
+            color: rgba(255,255,255,0.25);
+        }
+
+        input:focus {
+            background: rgba(0,255,136,0.06);
+            border-color: rgba(0,255,136,0.4);
+            box-shadow: 0 0 0 3px rgba(0,255,136,0.08);
+        }
+
+        .eye-btn {
+            position: absolute;
+            right: 14px;
+            top: 50%;
+            transform: translateY(-50%);
+            cursor: pointer;
+            font-size: 16px;
+            opacity: 0.4;
+            transition: opacity 0.2s;
+            background: none;
+            border: none;
+            color: white;
+            padding: 0;
+            width: auto;
+        }
+        .eye-btn:hover { opacity: 0.8; }
+
+        /* Login button */
+        .login-btn {
+            width: 100%;
+            padding: 14px;
+            background: linear-gradient(135deg, #00ff88, #00c96d);
+            color: #020f0a;
+            border: none;
+            border-radius: 12px;
+            font-family: 'Outfit', sans-serif;
+            font-size: 15px;
+            font-weight: 700;
+            letter-spacing: 0.05em;
+            cursor: pointer;
+            margin-top: 8px;
+            transition: all 0.3s;
+            position: relative;
+            overflow: hidden;
+        }
+
+        .login-btn::before {
+            content: '';
+            position: absolute;
+            inset: 0;
+            background: linear-gradient(135deg, rgba(255,255,255,0.15), transparent);
+            opacity: 0;
+            transition: opacity 0.3s;
+        }
+
+        .login-btn:hover { transform: translateY(-2px); box-shadow: 0 8px 24px rgba(0,255,136,0.35); }
+        .login-btn:hover::before { opacity: 1; }
+        .login-btn:active { transform: translateY(0); }
+        .login-btn:disabled { opacity: 0.6; cursor: not-allowed; transform: none; }
+
+        /* Error message */
+        #msg {
+            min-height: 20px;
+            font-size: 13px;
+            color: #ff6b6b;
+            margin-top: 14px;
+            text-align: center;
+        }
+
+        /* Bottom link */
+        .bottom-link {
+            text-align: center;
+            margin-top: 20px;
+            font-size: 13px;
+            color: rgba(255,255,255,0.35);
+        }
+
+        .bottom-link a {
+            color: var(--green);
+            text-decoration: none;
+            font-weight: 600;
+            transition: opacity 0.2s;
+        }
+        .bottom-link a:hover { opacity: 0.7; }
+
+        /* Shake animation */
+        @keyframes shake {
+            0%, 100% { transform: translateX(0); }
+            20% { transform: translateX(-8px); }
+            40% { transform: translateX(8px); }
+            60% { transform: translateX(-5px); }
+            80% { transform: translateX(5px); }
+        }
+        .shake { animation: shake 0.4s ease; }
+    </style>
+
+<style>
+/* ── LIGHT MODE OVERRIDES ── */
+body.light-mode { color: #111 !important; }
+body.light-mode header { background: rgba(0,0,0,0.05) !important; border-color: rgba(0,0,0,0.1) !important; }
+body.light-mode .sidebar { background: rgba(0,0,0,0.04) !important; border-color: rgba(0,0,0,0.1) !important; }
+body.light-mode .nav-item { color: rgba(0,0,0,0.6) !important; }
+body.light-mode .nav-item:hover, body.light-mode .nav-item.active { color: #111 !important; background: rgba(0,0,0,0.06) !important; }
+body.light-mode .stat-card, body.light-mode .stat-box { background: rgba(0,0,0,0.04) !important; border-color: rgba(0,0,0,0.1) !important; }
+body.light-mode .card, body.light-mode .action-card { background: rgba(0,0,0,0.04) !important; border-color: rgba(0,0,0,0.1) !important; }
+body.light-mode .dashboard-section { background: rgba(0,0,0,0.04) !important; border-color: rgba(0,0,0,0.1) !important; }
+body.light-mode .login-box { background: rgba(255,255,255,0.8) !important; border-color: rgba(0,0,0,0.15) !important; box-shadow: 0 8px 32px rgba(0,0,0,0.12) !important; }
+body.light-mode .login-box h2, body.light-mode .login-box .subtitle { color: #111 !important; }
+body.light-mode input, body.light-mode select { background: rgba(0,0,0,0.05) !important; border-color: rgba(0,0,0,0.15) !important; color: #111 !important; }
+body.light-mode input::placeholder { color: rgba(0,0,0,0.35) !important; }
+body.light-mode label { color: rgba(0,0,0,0.5) !important; }
+body.light-mode table td { color: rgba(0,0,0,0.75) !important; border-color: rgba(0,0,0,0.06) !important; }
+body.light-mode table th { color: rgba(0,0,0,0.4) !important; border-color: rgba(0,0,0,0.1) !important; }
+body.light-mode .log-item { background: rgba(0,0,0,0.04) !important; border-color: rgba(0,0,0,0.1) !important; color: rgba(0,0,0,0.65) !important; }
+body.light-mode .recent-log, body.light-mode .log-section { background: rgba(0,0,0,0.03) !important; }
+body.light-mode .section-header h2, body.light-mode .card-title, body.light-mode .page-header h1 { color: #111 !important; }
+body.light-mode .page-header p, body.light-mode .stat-label, body.light-mode .stat-box-label { color: rgba(0,0,0,0.5) !important; }
+body.light-mode .id-badge { background: rgba(0,0,0,0.08) !important; color: #444 !important; }
+body.light-mode .bottom-link { color: rgba(0,0,0,0.45) !important; }
+body.light-mode .welcome-text h3 { color: rgba(0,0,0,0.5) !important; }
+body.light-mode .welcome-text h1 { color: #111 !important; }
+body.light-mode .no-data { color: rgba(0,0,0,0.35) !important; }
+</style>
+</head>
+<body>
+<!-- ═══ THEME WIDGET (inject in <body>) ═══ -->
+<div id="themeWidget" style="position:fixed;top:16px;right:16px;z-index:99999;display:flex;align-items:center;gap:8px;">
+    <!-- Mode Toggle -->
+    <button id="modeToggleBtn" onclick="toggleMode()" title="Toggle Dark/Light"
+        style="width:40px;height:40px;border-radius:12px;border:1px solid var(--border-color,rgba(255,255,255,0.15));background:var(--card-bg,rgba(255,255,255,0.06));color:var(--text-color,#fff);font-size:18px;cursor:pointer;display:flex;align-items:center;justify-content:center;transition:all 0.3s;backdrop-filter:blur(10px);">
+        🌙
+    </button>
+    <!-- Color Picker Toggle -->
+    <button onclick="togglePicker()" title="Change colour theme"
+        style="width:40px;height:40px;border-radius:12px;border:1px solid var(--border-color,rgba(255,255,255,0.15));background:var(--card-bg,rgba(255,255,255,0.06));color:var(--text-color,#fff);font-size:18px;cursor:pointer;display:flex;align-items:center;justify-content:center;transition:all 0.3s;backdrop-filter:blur(10px);">
+        🎨
+    </button>
+    <!-- Color Picker Panel -->
+    <div id="colorPicker" style="display:none;background:var(--card-bg,rgba(20,20,30,0.95));border:1px solid var(--border-color,rgba(255,255,255,0.15));border-radius:16px;padding:14px;backdrop-filter:blur(20px);box-shadow:0 8px 32px rgba(0,0,0,0.4);">
+        <div style="font-size:11px;font-weight:600;letter-spacing:0.08em;text-transform:uppercase;color:var(--text-muted,rgba(255,255,255,0.45));margin-bottom:10px;">Colour Theme</div>
+        <div style="display:flex;gap:8px;flex-wrap:wrap;max-width:170px;">
+            <div onclick="setColor('green')"  title="Emerald" style="width:28px;height:28px;border-radius:8px;background:#00ff88;cursor:pointer;transition:transform 0.2s;" onmouseover="this.style.transform='scale(1.2)'" onmouseout="this.style.transform='scale(1)'"></div>
+            <div onclick="setColor('purple')" title="Purple"  style="width:28px;height:28px;border-radius:8px;background:#a18cd1;cursor:pointer;transition:transform 0.2s;" onmouseover="this.style.transform='scale(1.2)'" onmouseout="this.style.transform='scale(1)'"></div>
+            <div onclick="setColor('blue')"   title="Ocean"   style="width:28px;height:28px;border-radius:8px;background:#00d2ff;cursor:pointer;transition:transform 0.2s;" onmouseover="this.style.transform='scale(1.2)'" onmouseout="this.style.transform='scale(1)'"></div>
+            <div onclick="setColor('gold')"   title="Gold"    style="width:28px;height:28px;border-radius:8px;background:#f5c842;cursor:pointer;transition:transform 0.2s;" onmouseover="this.style.transform='scale(1.2)'" onmouseout="this.style.transform='scale(1)'"></div>
+            <div onclick="setColor('rose')"   title="Rose"    style="width:28px;height:28px;border-radius:8px;background:#ff6b9d;cursor:pointer;transition:transform 0.2s;" onmouseover="this.style.transform='scale(1.2)'" onmouseout="this.style.transform='scale(1)'"></div>
+        </div>
+    </div>
+</div>
+
+<!-- ═══ THEME ENGINE SCRIPT ═══ -->
+<script>
+const THEMES = {
+    green:  { primary:'#00ff88', secondary:'#00d2ff', darkBg:'linear-gradient(135deg,#020f0a,#00332e)', lightBg:'#efffef', cardDark:'rgba(0,255,136,0.04)', cardLight:'rgba(0,180,80,0.06)', borderDark:'rgba(0,255,136,0.15)', borderLight:'rgba(0,180,80,0.2)' },
+    purple: { primary:'#a18cd1', secondary:'#fbc2eb', darkBg:'linear-gradient(135deg,#08060f,#1a0f2e)', lightBg:'#f5f0ff', cardDark:'rgba(161,140,209,0.05)', cardLight:'rgba(120,80,200,0.06)', borderDark:'rgba(161,140,209,0.18)', borderLight:'rgba(120,80,200,0.2)' },
+    blue:   { primary:'#00d2ff', secondary:'#3a7bd5', darkBg:'linear-gradient(135deg,#020a14,#0a1628)', lightBg:'#eef8ff', cardDark:'rgba(0,210,255,0.04)', cardLight:'rgba(0,150,220,0.06)', borderDark:'rgba(0,210,255,0.15)', borderLight:'rgba(0,150,220,0.2)' },
+    gold:   { primary:'#f5c842', secondary:'#ff9500', darkBg:'linear-gradient(135deg,#0a0800,#1a1000)', lightBg:'#fffbee', cardDark:'rgba(245,200,66,0.04)', cardLight:'rgba(200,150,0,0.06)', borderDark:'rgba(245,200,66,0.15)', borderLight:'rgba(200,150,0,0.2)' },
+    rose:   { primary:'#ff6b9d', secondary:'#ff4757', darkBg:'linear-gradient(135deg,#0f0608,#1a0810)', lightBg:'#fff0f4', cardDark:'rgba(255,107,157,0.04)', cardLight:'rgba(220,60,100,0.06)', borderDark:'rgba(255,107,157,0.15)', borderLight:'rgba(220,60,100,0.2)' },
+};
+
+let currentColor = localStorage.getItem('sms_color') || 'green';
+let currentMode  = localStorage.getItem('sms_mode')  || 'dark';
+
+function applyTheme(color, mode) {
+    const t = THEMES[color] || THEMES.green;
+    const isLight = mode === 'light';
+
+    document.documentElement.style.setProperty('--primary', t.primary);
+    document.documentElement.style.setProperty('--secondary', t.secondary);
+
+    if (isLight) {
+        document.body.style.background = t.lightBg;
+        document.body.style.color = '#111';
+        document.documentElement.style.setProperty('--card-bg', t.cardLight);
+        document.documentElement.style.setProperty('--border-color', t.borderLight);
+        document.documentElement.style.setProperty('--text-color', '#111');
+        document.documentElement.style.setProperty('--text-muted', 'rgba(0,0,0,0.5)');
+        document.documentElement.style.setProperty('--input-bg', 'rgba(0,0,0,0.05)');
+        document.documentElement.style.setProperty('--input-border', 'rgba(0,0,0,0.15)');
+        document.body.classList.add('light-mode');
+        const btn = document.getElementById('modeToggleBtn');
+        if (btn) btn.innerText = '☀️';
+    } else {
+        document.body.style.background = t.darkBg;
+        document.body.style.color = '#fff';
+        document.documentElement.style.setProperty('--card-bg', t.cardDark);
+        document.documentElement.style.setProperty('--border-color', t.borderDark);
+        document.documentElement.style.setProperty('--text-color', '#fff');
+        document.documentElement.style.setProperty('--text-muted', 'rgba(255,255,255,0.45)');
+        document.documentElement.style.setProperty('--input-bg', 'rgba(255,255,255,0.06)');
+        document.documentElement.style.setProperty('--input-border', 'rgba(255,255,255,0.1)');
+        document.body.classList.remove('light-mode');
+        const btn = document.getElementById('modeToggleBtn');
+        if (btn) btn.innerText = '🌙';
+    }
+
+    // Update all cards, borders, inputs dynamically
+    document.querySelectorAll('.login-box, .card, .action-card, .dashboard-section, .stat-card, .stat-box, .recent-log, .log-section, .students-section').forEach(el => {
+        el.style.background = isLight ? t.cardLight : t.cardDark;
+        el.style.borderColor = isLight ? t.borderLight : t.borderDark;
+        el.style.color = isLight ? '#111' : '#fff';
+    });
+
+    document.querySelectorAll('input, select').forEach(el => {
+        el.style.background = isLight ? 'rgba(0,0,0,0.05)' : 'rgba(255,255,255,0.06)';
+        el.style.borderColor = isLight ? 'rgba(0,0,0,0.15)' : 'rgba(255,255,255,0.1)';
+        el.style.color = isLight ? '#111' : '#fff';
+    });
+
+    document.querySelectorAll('table th').forEach(el => { el.style.color = isLight ? 'rgba(0,0,0,0.4)' : 'rgba(255,255,255,0.3)'; });
+    document.querySelectorAll('table td').forEach(el => { el.style.color = isLight ? 'rgba(0,0,0,0.75)' : 'rgba(255,255,255,0.75)'; });
+
+    localStorage.setItem('sms_color', color);
+    localStorage.setItem('sms_mode', mode);
+    currentColor = color;
+    currentMode = mode;
+}
+
+function toggleMode() {
+    currentMode = currentMode === 'dark' ? 'light' : 'dark';
+    applyTheme(currentColor, currentMode);
+}
+
+function setColor(color) {
+    applyTheme(color, currentMode);
+    document.getElementById('colorPicker').style.display = 'none';
+}
+
+function togglePicker() {
+    const picker = document.getElementById('colorPicker');
+    picker.style.display = picker.style.display === 'none' ? 'block' : 'none';
+}
+
+// Close picker on outside click
+document.addEventListener('click', function(e) {
+    const widget = document.getElementById('themeWidget');
+    if (widget && !widget.contains(e.target)) {
+        const picker = document.getElementById('colorPicker');
+        if (picker) picker.style.display = 'none';
+    }
+});
+
+// Apply saved theme on load
+applyTheme(currentColor, currentMode);
+</script>
+
+
+    <div class="bg-grid"></div>
+    <div class="orb orb-1"></div>
+    <div class="orb orb-2"></div>
+    <div id="particles-js"></div>
+
+    <div class="login-wrapper">
+        <div class="top-label">
+            <span class="badge">
+                <span class="badge-dot"></span>
+                Student Portal
+            </span>
+        </div>
+
+        <div class="login-box" id="card">
+            <h2>Welcome back 👋</h2>
+            <p class="subtitle">Sign in to your student dashboard</p>
+
+            <div class="field">
+                <label>Email Address</label>
+                <div class="input-wrap">
+                    <span class="input-icon">📧</span>
+                    <input type="email" id="email" placeholder="your@email.com" autocomplete="email">
+                </div>
+            </div>
+
+            <div class="field">
+                <label>Password</label>
+                <div class="input-wrap">
+                    <span class="input-icon">🔒</span>
+                    <input type="password" id="password" placeholder="Enter your password">
+                    <button class="eye-btn" onclick="togglePassword()" type="button">👁️</button>
+                </div>
+            </div>
+
+            <button class="login-btn" id="loginBtn" onclick="login()">Sign In</button>
+            <p id="msg"></p>
+        </div>
+
+        <div class="bottom-link">
+            Are you a teacher? <a href="teacher-login.html">Login here →</a>
+        </div>
+    </div>
+
+    <script src="https://cdn.jsdelivr.net/npm/particles.js"></script>
+    <script>
+        particlesJS("particles-js", {
+            particles: {
+                number: { value: 60, density: { enable: true, value_area: 800 } },
+                color: { value: "#00ff88" },
+                shape: { type: "circle" },
+                opacity: { value: 0.3, random: true, anim: { enable: true, speed: 0.8, opacity_min: 0.05 } },
+                size: { value: 2, random: true },
+                line_linked: { enable: true, distance: 140, color: "#00ff88", opacity: 0.12, width: 1 },
+                move: { enable: true, speed: 1.2, out_mode: "out" }
+            },
+            interactivity: {
+                detect_on: "canvas",
+                events: { onhover: { enable: true, mode: "grab" }, onclick: { enable: true, mode: "push" } },
+                modes: { grab: { distance: 180, line_linked: { opacity: 0.4 } } }
+            },
+            retina_detect: true
+        });
+
+        function togglePassword() {
+            const p = document.getElementById("password");
+            p.type = p.type === "password" ? "text" : "password";
+        }
+
+        function login() {
+            const btn = document.getElementById("loginBtn");
+            const email = document.getElementById("email").value.trim();
+            const password = document.getElementById("password").value;
+            const msg = document.getElementById("msg");
+            const card = document.getElementById("card");
+
+            if (!email || !password) {
+                msg.innerText = "❌ Please fill in all fields";
+                return;
+            }
+
+            btn.innerText = "Verifying...";
+            btn.disabled = true;
+            msg.innerText = "";
+
+            fetch("http://localhost:6060/students/login", {
+                method: "POST",
+                headers: { "Content-Type": "application/json" },
+                body: JSON.stringify({ email, password })
+            })
+            .then(res => { if (!res.ok) throw new Error("fail"); return res.json(); })
+            .then(data => {
+                btn.innerText = "✓ Success!";
+                document.body.style.opacity = "0";
+                document.body.style.transition = "0.5s";
+                setTimeout(() => { window.location.href = "student-dashboard.html?id=" + data.id; }, 500);
+            })
+            .catch(() => {
+                card.classList.add("shake");
+                setTimeout(() => card.classList.remove("shake"), 400);
+                btn.innerText = "Sign In";
+                btn.disabled = false;
+                msg.innerText = "❌ Invalid email or password";
+            });
+        }
+
+        document.addEventListener("keydown", e => { if (e.key === "Enter") login(); });
+    </script>
+</body>
+</html>

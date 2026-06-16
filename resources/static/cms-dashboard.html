@@ -1,0 +1,1902 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>CMS | Teacher Control Panel</title>
+    <link href="https://fonts.googleapis.com/css2?family=Outfit:wght@300;400;600;700&display=swap" rel="stylesheet">
+    <style>
+        * { margin: 0; padding: 0; box-sizing: border-box; }
+
+        :root {
+            --purple: #a18cd1;
+            --cyan: #74ebd5;
+            --green: #00ff88;
+            --yellow: #ffcc00;
+            --red: #ff5555;
+            --bg: #08060f;
+            --card: rgba(255,255,255,0.04);
+            --border: rgba(255,255,255,0.08);
+        }
+
+        body {
+            font-family: 'Outfit', sans-serif;
+            background: var(--bg);
+            color: white;
+            min-height: 100vh;
+        }
+
+        body::before {
+            content: '';
+            position: fixed;
+            inset: 0;
+            background-image:
+                linear-gradient(rgba(161,140,209,0.025) 1px, transparent 1px),
+                linear-gradient(90deg, rgba(161,140,209,0.025) 1px, transparent 1px);
+            background-size: 55px 55px;
+            pointer-events: none;
+            z-index: 0;
+        }
+
+
+        .sidebar {
+            position: fixed;
+            left: 0; top: 0; bottom: 0;
+            width: 220px;
+            background: rgba(255,255,255,0.03);
+            border-right: 1px solid var(--border);
+            padding: 28px 16px;
+            display: flex;
+            flex-direction: column;
+            gap: 4px;
+            z-index: 100;
+        }
+
+        .sidebar-brand {
+            padding: 0 12px 24px;
+            border-bottom: 1px solid var(--border);
+            margin-bottom: 12px;
+        }
+
+        .sidebar-brand h2 {
+            font-size: 16px;
+            font-weight: 700;
+            background: linear-gradient(to right, var(--purple), #fbc2eb);
+            -webkit-background-clip: text;
+            background-clip: text;
+            -webkit-text-fill-color: transparent;
+        }
+
+        .sidebar-brand p {
+            font-size: 11px;
+            color: rgba(255,255,255,0.3);
+            margin-top: 2px;
+        }
+
+        .nav-item {
+            display: flex;
+            align-items: center;
+            gap: 10px;
+            padding: 10px 12px;
+            border-radius: 10px;
+            font-size: 13px;
+            font-weight: 500;
+            color: rgba(255,255,255,0.5);
+            cursor: pointer;
+            transition: all 0.2s;
+            border: 1px solid transparent;
+        }
+
+        .nav-item:hover { color: white; background: rgba(255,255,255,0.05); }
+
+        .nav-item.active {
+            color: var(--purple);
+            background: rgba(161,140,209,0.1);
+            border-color: rgba(161,140,209,0.2);
+        }
+
+        .nav-icon { font-size: 16px; width: 20px; text-align: center; }
+
+        .sidebar-bottom {
+            margin-top: auto;
+            border-top: 1px solid var(--border);
+            padding-top: 16px;
+        }
+
+        .logout-nav {
+            display: flex;
+            align-items: center;
+            gap: 10px;
+            padding: 10px 12px;
+            border-radius: 10px;
+            font-size: 13px;
+            font-weight: 500;
+            color: #ff6b6b;
+            cursor: pointer;
+            transition: all 0.2s;
+        }
+
+        .logout-nav:hover { background: rgba(255,68,68,0.1); }
+
+   
+        .main {
+            margin-left: 220px;
+            padding: 28px;
+            position: relative;
+            z-index: 1;
+            min-height: 100vh;
+        }
+
+
+        .page-header {
+            margin-bottom: 28px;
+        }
+
+        .page-header h1 {
+            font-size: 24px;
+            font-weight: 700;
+            letter-spacing: -0.5px;
+        }
+
+        .page-header p {
+            font-size: 13px;
+            color: rgba(255,255,255,0.35);
+            margin-top: 4px;
+        }
+
+
+        .tab-content { display: none; }
+        .tab-content.active { display: block; }
+
+
+        .stats-row {
+            display: grid;
+            grid-template-columns: repeat(auto-fit, minmax(160px, 1fr));
+            gap: 14px;
+            margin-bottom: 24px;
+        }
+
+        .stat-box {
+            background: var(--card);
+            border: 1px solid var(--border);
+            border-radius: 16px;
+            padding: 18px 20px;
+            position: relative;
+            overflow: hidden;
+        }
+
+        .stat-box::before {
+            content: '';
+            position: absolute;
+            top: 0; left: 0; right: 0;
+            height: 2px;
+        }
+
+        .stat-box:nth-child(1)::before { background: linear-gradient(90deg, var(--cyan), var(--purple)); }
+        .stat-box:nth-child(2)::before { background: linear-gradient(90deg, var(--green), var(--cyan)); }
+        .stat-box:nth-child(3)::before { background: linear-gradient(90deg, var(--yellow), #ff9900); }
+        .stat-box:nth-child(4)::before { background: linear-gradient(90deg, var(--red), #ff9900); }
+
+        .stat-box-label { font-size: 11px; font-weight: 600; letter-spacing: 0.08em; text-transform: uppercase; color: rgba(255,255,255,0.35); margin-bottom: 8px; }
+        .stat-box-value { font-size: 28px; font-weight: 700; letter-spacing: -1px; }
+
+
+        .card {
+            background: var(--card);
+            border: 1px solid var(--border);
+            border-radius: 20px;
+            padding: 24px;
+            margin-bottom: 20px;
+        }
+
+        .card-title {
+            font-size: 16px;
+            font-weight: 600;
+            margin-bottom: 20px;
+            display: flex;
+            align-items: center;
+            gap: 8px;
+        }
+
+
+        .form-grid {
+            display: grid;
+            grid-template-columns: repeat(auto-fit, minmax(200px, 1fr));
+            gap: 14px;
+            margin-bottom: 16px;
+        }
+
+        .form-field label {
+            display: block;
+            font-size: 11px;
+            font-weight: 600;
+            letter-spacing: 0.08em;
+            text-transform: uppercase;
+            color: rgba(255,255,255,0.38);
+            margin-bottom: 7px;
+        }
+
+        .form-field input,
+        .form-field select {
+            width: 100%;
+            padding: 11px 14px;
+            background: rgba(255,255,255,0.05);
+            border: 1px solid rgba(255,255,255,0.1);
+            border-radius: 10px;
+            color: white;
+            font-family: 'Outfit', sans-serif;
+            font-size: 14px;
+            outline: none;
+            transition: all 0.25s;
+        }
+
+        .form-field input::placeholder { color: rgba(255,255,255,0.22); }
+
+        .form-field input:focus,
+        .form-field select:focus {
+            border-color: rgba(161,140,209,0.45);
+            background: rgba(161,140,209,0.07);
+            box-shadow: 0 0 0 3px rgba(161,140,209,0.08);
+        }
+
+        .form-field select option { background: #1a1528; }
+
+
+        .btn {
+            padding: 10px 20px;
+            border-radius: 10px;
+            font-family: 'Outfit', sans-serif;
+            font-size: 13px;
+            font-weight: 600;
+            cursor: pointer;
+            border: none;
+            transition: all 0.25s;
+        }
+
+        .btn-primary {
+            background: linear-gradient(135deg, var(--purple), #7b2ff7);
+            color: white;
+        }
+        .btn-primary:hover { transform: translateY(-2px); box-shadow: 0 6px 18px rgba(123,47,247,0.4); }
+
+        .btn-success {
+            background: rgba(0,255,136,0.1);
+            border: 1px solid rgba(0,255,136,0.25);
+            color: var(--green);
+        }
+        .btn-success:hover { background: rgba(0,255,136,0.2); }
+
+        .btn-danger {
+            background: rgba(255,68,68,0.1);
+            border: 1px solid rgba(255,68,68,0.25);
+            color: var(--red);
+        }
+        .btn-danger:hover { background: rgba(255,68,68,0.2); }
+
+        .btn-warning {
+            background: rgba(255,204,0,0.1);
+            border: 1px solid rgba(255,204,0,0.25);
+            color: var(--yellow);
+        }
+        .btn-warning:hover { background: rgba(255,204,0,0.2); }
+
+        .btn:disabled { opacity: 0.5; cursor: not-allowed; transform: none !important; }
+
+
+        .table-wrap { overflow-x: auto; }
+
+        table {
+            width: 100%;
+            border-collapse: collapse;
+            font-size: 13px;
+        }
+
+        table th {
+            text-align: left;
+            padding: 8px 14px;
+            font-size: 11px;
+            text-transform: uppercase;
+            letter-spacing: 0.08em;
+            color: rgba(255,255,255,0.3);
+            border-bottom: 1px solid var(--border);
+            white-space: nowrap;
+        }
+
+        table td {
+            padding: 12px 14px;
+            border-bottom: 1px solid rgba(255,255,255,0.04);
+            color: rgba(255,255,255,0.75);
+            vertical-align: middle;
+        }
+
+        table tr:last-child td { border-bottom: none; }
+        table tr:hover td { background: rgba(255,255,255,0.02); }
+
+        .id-badge {
+            display: inline-block;
+            background: rgba(161,140,209,0.12);
+            color: var(--purple);
+            font-weight: 700;
+            font-size: 11px;
+            padding: 3px 10px;
+            border-radius: 100px;
+        }
+
+        .pill {
+            display: inline-block;
+            padding: 3px 10px;
+            border-radius: 100px;
+            font-size: 11px;
+            font-weight: 600;
+        }
+
+        .pill-present { background: rgba(0,255,136,0.12); color: var(--green); }
+        .pill-absent  { background: rgba(255,68,68,0.12); color: var(--red); }
+        .pill-good    { background: rgba(0,255,136,0.12); color: var(--green); }
+        .pill-avg     { background: rgba(255,204,0,0.12); color: var(--yellow); }
+        .pill-low     { background: rgba(255,68,68,0.12); color: var(--red); }
+
+        .action-btns { display: flex; gap: 6px; }
+
+
+        .search-bar {
+            display: flex;
+            gap: 10px;
+            margin-bottom: 16px;
+            align-items: center;
+        }
+
+        .search-input {
+            flex: 1;
+            padding: 10px 14px;
+            background: rgba(255,255,255,0.05);
+            border: 1px solid var(--border);
+            border-radius: 10px;
+            color: white;
+            font-family: 'Outfit', sans-serif;
+            font-size: 13px;
+            outline: none;
+            transition: border-color 0.25s;
+        }
+
+        .search-input::placeholder { color: rgba(255,255,255,0.25); }
+        .search-input:focus { border-color: rgba(161,140,209,0.4); }
+
+
+        .modal-overlay {
+            position: fixed;
+            inset: 0;
+            background: rgba(0,0,0,0.7);
+            backdrop-filter: blur(4px);
+            z-index: 1000;
+            display: none;
+            align-items: center;
+            justify-content: center;
+        }
+
+        .modal-overlay.open { display: flex; }
+
+        .modal {
+            background: #120f1e;
+            border: 1px solid rgba(161,140,209,0.2);
+            border-radius: 20px;
+            padding: 28px;
+            width: 480px;
+            max-width: 95vw;
+            animation: modalIn 0.3s cubic-bezier(0.16,1,0.3,1);
+        }
+
+        @keyframes modalIn {
+            from { opacity: 0; transform: scale(0.95) translateY(10px); }
+            to   { opacity: 1; transform: scale(1) translateY(0); }
+        }
+
+        .modal-header {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            margin-bottom: 20px;
+        }
+
+        .modal-header h3 { font-size: 17px; font-weight: 600; }
+
+        .modal-close {
+            width: 30px; height: 30px;
+            border-radius: 8px;
+            background: rgba(255,255,255,0.06);
+            border: none;
+            color: rgba(255,255,255,0.5);
+            font-size: 16px;
+            cursor: pointer;
+            display: flex; align-items: center; justify-content: center;
+            transition: all 0.2s;
+        }
+
+        .modal-close:hover { background: rgba(255,68,68,0.15); color: var(--red); }
+
+        .modal-footer {
+            display: flex;
+            gap: 10px;
+            justify-content: flex-end;
+            margin-top: 20px;
+        }
+
+
+        .toast {
+            position: fixed;
+            bottom: 28px;
+            right: 28px;
+            padding: 14px 22px;
+            border-radius: 12px;
+            font-family: 'Outfit', sans-serif;
+            font-size: 13px;
+            font-weight: 600;
+            z-index: 9999;
+            display: none;
+            max-width: 320px;
+        }
+
+        .toast.success { background: #0a2e1f; border: 1px solid rgba(0,255,136,0.3); color: var(--green); }
+        .toast.error   { background: #2e0a0a; border: 1px solid rgba(255,68,68,0.3); color: var(--red); }
+        .toast.info    { background: #0a0a2e; border: 1px solid rgba(161,140,209,0.3); color: var(--purple); }
+
+        .empty-state {
+            text-align: center;
+            padding: 32px 0;
+            color: rgba(255,255,255,0.25);
+            font-size: 13px;
+        }
+
+        .spinner {
+            width: 28px; height: 28px;
+            border: 2px solid rgba(161,140,209,0.15);
+            border-top-color: var(--purple);
+            border-radius: 50%;
+            animation: spin 0.7s linear infinite;
+            margin: 20px auto;
+        }
+        @keyframes spin { to { transform: rotate(360deg); } }
+    </style>
+
+<style>
+
+body.light-mode { color: #111 !important; }
+body.light-mode header { background: rgba(0,0,0,0.05) !important; border-color: rgba(0,0,0,0.1) !important; }
+body.light-mode .sidebar { background: rgba(0,0,0,0.04) !important; border-color: rgba(0,0,0,0.1) !important; }
+body.light-mode .nav-item { color: rgba(0,0,0,0.6) !important; }
+body.light-mode .nav-item:hover, body.light-mode .nav-item.active { color: #111 !important; background: rgba(0,0,0,0.06) !important; }
+body.light-mode .stat-card, body.light-mode .stat-box { background: rgba(0,0,0,0.04) !important; border-color: rgba(0,0,0,0.1) !important; }
+body.light-mode .card, body.light-mode .action-card { background: rgba(0,0,0,0.04) !important; border-color: rgba(0,0,0,0.1) !important; }
+body.light-mode .dashboard-section { background: rgba(0,0,0,0.04) !important; border-color: rgba(0,0,0,0.1) !important; }
+body.light-mode .login-box { background: rgba(255,255,255,0.8) !important; border-color: rgba(0,0,0,0.15) !important; box-shadow: 0 8px 32px rgba(0,0,0,0.12) !important; }
+body.light-mode .login-box h2, body.light-mode .login-box .subtitle { color: #111 !important; }
+body.light-mode input, body.light-mode select { background: rgba(0,0,0,0.05) !important; border-color: rgba(0,0,0,0.15) !important; color: #111 !important; }
+body.light-mode input::placeholder { color: rgba(0,0,0,0.35) !important; }
+body.light-mode label { color: rgba(0,0,0,0.5) !important; }
+body.light-mode table td { color: rgba(0,0,0,0.75) !important; border-color: rgba(0,0,0,0.06) !important; }
+body.light-mode table th { color: rgba(0,0,0,0.4) !important; border-color: rgba(0,0,0,0.1) !important; }
+body.light-mode .log-item { background: rgba(0,0,0,0.04) !important; border-color: rgba(0,0,0,0.1) !important; color: rgba(0,0,0,0.65) !important; }
+body.light-mode .recent-log, body.light-mode .log-section { background: rgba(0,0,0,0.03) !important; }
+body.light-mode .section-header h2, body.light-mode .card-title, body.light-mode .page-header h1 { color: #111 !important; }
+body.light-mode .page-header p, body.light-mode .stat-label, body.light-mode .stat-box-label { color: rgba(0,0,0,0.5) !important; }
+body.light-mode .id-badge { background: rgba(0,0,0,0.08) !important; color: #444 !important; }
+body.light-mode .bottom-link { color: rgba(0,0,0,0.45) !important; }
+body.light-mode .welcome-text h3 { color: rgba(0,0,0,0.5) !important; }
+body.light-mode .welcome-text h1 { color: #111 !important; }
+body.light-mode .no-data { color: rgba(0,0,0,0.35) !important; }
+</style>
+</head>
+<body>
+
+<div id="themeWidget" style="position:fixed;top:16px;right:16px;z-index:99999;display:flex;align-items:center;gap:8px;">
+
+    <button id="modeToggleBtn" onclick="toggleMode()" title="Toggle Dark/Light"
+        style="width:40px;height:40px;border-radius:12px;border:1px solid var(--border-color,rgba(255,255,255,0.15));background:var(--card-bg,rgba(255,255,255,0.06));color:var(--text-color,#fff);font-size:18px;cursor:pointer;display:flex;align-items:center;justify-content:center;transition:all 0.3s;backdrop-filter:blur(10px);">
+        🌙
+    </button>
+
+    <button onclick="togglePicker()" title="Change colour theme"
+        style="width:40px;height:40px;border-radius:12px;border:1px solid var(--border-color,rgba(255,255,255,0.15));background:var(--card-bg,rgba(255,255,255,0.06));color:var(--text-color,#fff);font-size:18px;cursor:pointer;display:flex;align-items:center;justify-content:center;transition:all 0.3s;backdrop-filter:blur(10px);">
+        🎨
+    </button>
+
+    <div id="colorPicker" style="display:none;background:var(--card-bg,rgba(20,20,30,0.95));border:1px solid var(--border-color,rgba(255,255,255,0.15));border-radius:16px;padding:14px;backdrop-filter:blur(20px);box-shadow:0 8px 32px rgba(0,0,0,0.4);">
+        <div style="font-size:11px;font-weight:600;letter-spacing:0.08em;text-transform:uppercase;color:var(--text-muted,rgba(255,255,255,0.45));margin-bottom:10px;">Colour Theme</div>
+        <div style="display:flex;gap:8px;flex-wrap:wrap;max-width:170px;">
+            <div onclick="setColor('green')"  title="Emerald" style="width:28px;height:28px;border-radius:8px;background:#00ff88;cursor:pointer;transition:transform 0.2s;" onmouseover="this.style.transform='scale(1.2)'" onmouseout="this.style.transform='scale(1)'"></div>
+            <div onclick="setColor('purple')" title="Purple"  style="width:28px;height:28px;border-radius:8px;background:#a18cd1;cursor:pointer;transition:transform 0.2s;" onmouseover="this.style.transform='scale(1.2)'" onmouseout="this.style.transform='scale(1)'"></div>
+            <div onclick="setColor('blue')"   title="Ocean"   style="width:28px;height:28px;border-radius:8px;background:#00d2ff;cursor:pointer;transition:transform 0.2s;" onmouseover="this.style.transform='scale(1.2)'" onmouseout="this.style.transform='scale(1)'"></div>
+            <div onclick="setColor('gold')"   title="Gold"    style="width:28px;height:28px;border-radius:8px;background:#f5c842;cursor:pointer;transition:transform 0.2s;" onmouseover="this.style.transform='scale(1.2)'" onmouseout="this.style.transform='scale(1)'"></div>
+            <div onclick="setColor('rose')"   title="Rose"    style="width:28px;height:28px;border-radius:8px;background:#ff6b9d;cursor:pointer;transition:transform 0.2s;" onmouseover="this.style.transform='scale(1.2)'" onmouseout="this.style.transform='scale(1)'"></div>
+        </div>
+    </div>
+</div>
+
+
+<script>
+const THEMES = {
+    green:  { primary:'#00ff88', secondary:'#00d2ff', darkBg:'linear-gradient(135deg,#020f0a,#00332e)', lightBg:'#efffef', cardDark:'rgba(0,255,136,0.04)', cardLight:'rgba(0,180,80,0.06)', borderDark:'rgba(0,255,136,0.15)', borderLight:'rgba(0,180,80,0.2)' },
+    purple: { primary:'#a18cd1', secondary:'#fbc2eb', darkBg:'linear-gradient(135deg,#08060f,#1a0f2e)', lightBg:'#f5f0ff', cardDark:'rgba(161,140,209,0.05)', cardLight:'rgba(120,80,200,0.06)', borderDark:'rgba(161,140,209,0.18)', borderLight:'rgba(120,80,200,0.2)' },
+    blue:   { primary:'#00d2ff', secondary:'#3a7bd5', darkBg:'linear-gradient(135deg,#020a14,#0a1628)', lightBg:'#eef8ff', cardDark:'rgba(0,210,255,0.04)', cardLight:'rgba(0,150,220,0.06)', borderDark:'rgba(0,210,255,0.15)', borderLight:'rgba(0,150,220,0.2)' },
+    gold:   { primary:'#f5c842', secondary:'#ff9500', darkBg:'linear-gradient(135deg,#0a0800,#1a1000)', lightBg:'#fffbee', cardDark:'rgba(245,200,66,0.04)', cardLight:'rgba(200,150,0,0.06)', borderDark:'rgba(245,200,66,0.15)', borderLight:'rgba(200,150,0,0.2)' },
+    rose:   { primary:'#ff6b9d', secondary:'#ff4757', darkBg:'linear-gradient(135deg,#0f0608,#1a0810)', lightBg:'#fff0f4', cardDark:'rgba(255,107,157,0.04)', cardLight:'rgba(220,60,100,0.06)', borderDark:'rgba(255,107,157,0.15)', borderLight:'rgba(220,60,100,0.2)' },
+};
+
+let currentColor = localStorage.getItem('sms_color') || 'green';
+let currentMode  = localStorage.getItem('sms_mode')  || 'dark';
+
+function applyTheme(color, mode) {
+    const t = THEMES[color] || THEMES.green;
+    const isLight = mode === 'light';
+
+    document.documentElement.style.setProperty('--primary', t.primary);
+    document.documentElement.style.setProperty('--secondary', t.secondary);
+
+    if (isLight) {
+        document.body.style.background = t.lightBg;
+        document.body.style.color = '#111';
+        document.documentElement.style.setProperty('--card-bg', t.cardLight);
+        document.documentElement.style.setProperty('--border-color', t.borderLight);
+        document.documentElement.style.setProperty('--text-color', '#111');
+        document.documentElement.style.setProperty('--text-muted', 'rgba(0,0,0,0.5)');
+        document.documentElement.style.setProperty('--input-bg', 'rgba(0,0,0,0.05)');
+        document.documentElement.style.setProperty('--input-border', 'rgba(0,0,0,0.15)');
+        document.body.classList.add('light-mode');
+        const btn = document.getElementById('modeToggleBtn');
+        if (btn) btn.innerText = '☀️';
+    } else {
+        document.body.style.background = t.darkBg;
+        document.body.style.color = '#fff';
+        document.documentElement.style.setProperty('--card-bg', t.cardDark);
+        document.documentElement.style.setProperty('--border-color', t.borderDark);
+        document.documentElement.style.setProperty('--text-color', '#fff');
+        document.documentElement.style.setProperty('--text-muted', 'rgba(255,255,255,0.45)');
+        document.documentElement.style.setProperty('--input-bg', 'rgba(255,255,255,0.06)');
+        document.documentElement.style.setProperty('--input-border', 'rgba(255,255,255,0.1)');
+        document.body.classList.remove('light-mode');
+        const btn = document.getElementById('modeToggleBtn');
+        if (btn) btn.innerText = '🌙';
+    }
+
+
+    document.querySelectorAll('.login-box, .card, .action-card, .dashboard-section, .stat-card, .stat-box, .recent-log, .log-section, .students-section').forEach(el => {
+        el.style.background = isLight ? t.cardLight : t.cardDark;
+        el.style.borderColor = isLight ? t.borderLight : t.borderDark;
+        el.style.color = isLight ? '#111' : '#fff';
+    });
+
+    document.querySelectorAll('input, select').forEach(el => {
+        el.style.background = isLight ? 'rgba(0,0,0,0.05)' : 'rgba(255,255,255,0.06)';
+        el.style.borderColor = isLight ? 'rgba(0,0,0,0.15)' : 'rgba(255,255,255,0.1)';
+        el.style.color = isLight ? '#111' : '#fff';
+    });
+
+    document.querySelectorAll('table th').forEach(el => { el.style.color = isLight ? 'rgba(0,0,0,0.4)' : 'rgba(255,255,255,0.3)'; });
+    document.querySelectorAll('table td').forEach(el => { el.style.color = isLight ? 'rgba(0,0,0,0.75)' : 'rgba(255,255,255,0.75)'; });
+
+    localStorage.setItem('sms_color', color);
+    localStorage.setItem('sms_mode', mode);
+    currentColor = color;
+    currentMode = mode;
+}
+
+function toggleMode() {
+    currentMode = currentMode === 'dark' ? 'light' : 'dark';
+    applyTheme(currentColor, currentMode);
+}
+
+function setColor(color) {
+    applyTheme(color, currentMode);
+    document.getElementById('colorPicker').style.display = 'none';
+}
+
+function togglePicker() {
+    const picker = document.getElementById('colorPicker');
+    picker.style.display = picker.style.display === 'none' ? 'block' : 'none';
+}
+
+
+document.addEventListener('click', function(e) {
+    const widget = document.getElementById('themeWidget');
+    if (widget && !widget.contains(e.target)) {
+        const picker = document.getElementById('colorPicker');
+        if (picker) picker.style.display = 'none';
+    }
+});
+
+
+applyTheme(currentColor, currentMode);
+</script>
+
+
+
+    <div class="toast" id="toast"></div>
+
+
+    <div class="modal-overlay" id="editModal">
+        <div class="modal">
+            <div class="modal-header">
+                <h3>✏️ Edit Student</h3>
+                <button class="modal-close" onclick="closeModal()">✕</button>
+            </div>
+            <input type="hidden" id="editId">
+            <div class="form-grid" style="grid-template-columns: 1fr 1fr;">
+                <div class="form-field">
+                    <label>Name</label>
+                    <input type="text" id="editName" placeholder="Full name">
+                </div>
+                <div class="form-field">
+                    <label>Email</label>
+                    <input type="email" id="editEmail" placeholder="Email">
+                </div>
+                <div class="form-field">
+                    <label>Phone</label>
+                    <input type="text" id="editPhone" placeholder="Phone number">
+                </div>
+                <div class="form-field">
+                    <label>Password</label>
+                    <input type="text" id="editPassword" placeholder="Leave blank to keep current">
+                </div>
+            </div>
+            <div class="modal-footer">
+                <button class="btn btn-danger" onclick="closeModal()">Cancel</button>
+                <button class="btn btn-primary" onclick="saveEdit()">Save Changes</button>
+            </div>
+        </div>
+    </div>
+
+
+    <div class="sidebar">
+        <div class="sidebar-brand">
+            <h2>⚙️ CMS Panel</h2>
+            <p>Teacher Control Center</p>
+        </div>
+
+        <div class="nav-item active" onclick="switchTab('overview')">
+            <span class="nav-icon">🏠</span> Overview
+        </div>
+        <div class="nav-item" onclick="switchTab('teachers')">
+            <span class="nav-icon">👨‍🏫</span> Teachers
+        </div>
+        <div class="nav-item" onclick="switchTab('students')">
+            <span class="nav-icon">👥</span> Students
+        </div>
+        <div class="nav-item" onclick="switchTab('attendance')">
+            <span class="nav-icon">📅</span> Attendance
+        </div>
+        <div class="nav-item" onclick="switchTab('marks')">
+            <span class="nav-icon">📝</span> Marks
+        </div>
+        <div class="nav-item" onclick="switchTab('alerts')">
+            <span class="nav-icon">🔔</span> Alerts
+        </div>
+
+        <div class="nav-item" onclick="switchTab('interactive')">
+            <span class="nav-icon">🎓</span> Interactive
+        </div>
+        <div class="nav-item" onclick="switchTab('importexport')">
+            <span class="nav-icon">📦</span> Import / Export
+        </div>
+
+        <div class="sidebar-bottom">
+            <div class="nav-item" onclick="location.href='teacher-dashboard.html'">
+                <span class="nav-icon">🎛️</span> Teacher Panel
+            </div>
+            <div class="logout-nav" onclick="location.href='admin-login.html'">
+                <span class="nav-icon">🚪</span> Logout
+            </div>
+        </div>
+    </div>
+
+
+    <div class="main">
+
+  
+        <div class="tab-content active" id="tab-overview">
+            <div class="page-header">
+                <h1>📊 CMS Overview</h1>
+                <p>Complete snapshot of the Student Management System</p>
+            </div>
+
+            <div class="stats-row">
+                <div class="stat-box">
+                    <div class="stat-box-label">Total Students</div>
+                    <div class="stat-box-value" id="ov-students" style="color:var(--cyan)">-</div>
+                </div>
+                <div class="stat-box">
+                    <div class="stat-box-label">Attendance Records</div>
+                    <div class="stat-box-value" id="ov-att" style="color:var(--green)">-</div>
+                </div>
+                <div class="stat-box">
+                    <div class="stat-box-label">Marks Entries</div>
+                    <div class="stat-box-value" id="ov-marks" style="color:var(--yellow)">-</div>
+                </div>
+                <div class="stat-box">
+                    <div class="stat-box-label">Active Alerts</div>
+                    <div class="stat-box-value" id="ov-alerts" style="color:var(--red)">-</div>
+                </div>
+            </div>
+
+
+            <div class="card">
+                <div class="card-title">👥 All Students — Quick View</div>
+                <div class="table-wrap">
+                    <table id="ovTable">
+                        <thead>
+                            <tr>
+                                <th>ID</th>
+                                <th>Name</th>
+                                <th>Email</th>
+                                <th>Phone</th>
+                                <th>Avg Marks</th>
+                                <th>Attendance</th>
+                            </tr>
+                        </thead>
+                        <tbody id="ovBody">
+                            <tr><td colspan="6"><div class="spinner"></div></td></tr>
+                        </tbody>
+                    </table>
+                </div>
+            </div>
+        </div>
+
+
+        <div class="tab-content" id="tab-students">
+            <div class="page-header">
+                <h1>👥 Student Management</h1>
+                <p>Add, edit, and remove students from the system</p>
+            </div>
+
+
+            <div class="card">
+                <div class="card-title">➕ Add New Student</div>
+                <div class="form-grid">
+                    <div class="form-field">
+                        <label>Full Name</label>
+                        <input type="text" id="addName" placeholder="e.g. Santhosh">
+                    </div>
+                    <div class="form-field">
+                        <label>Email Address</label>
+                        <input type="email" id="addEmail" placeholder="student@gmail.com">
+                    </div>
+                    <div class="form-field">
+                        <label>Phone Number</label>
+                        <input type="text" id="addPhone" placeholder="9876543210">
+                    </div>
+                    <div class="form-field">
+                        <label>Password</label>
+                        <input type="text" id="addPassword" placeholder="Set login password">
+                    </div>
+                </div>
+                <button class="btn btn-primary" onclick="addStudent()" id="addStudentBtn">➕ Add Student</button>
+            </div>
+
+
+            <div class="card">
+                <div class="card-title">📋 All Students</div>
+                <div class="search-bar">
+                    <input class="search-input" id="studentSearch" placeholder="🔍 Search by name or email..." oninput="filterStudents()">
+                    <button class="btn btn-success" onclick="loadStudents()">↻ Refresh</button>
+                </div>
+                <div class="table-wrap">
+                    <table>
+                        <thead>
+                            <tr>
+                                <th>ID</th><th>Name</th><th>Email</th><th>Phone</th><th>Actions</th>
+                            </tr>
+                        </thead>
+                        <tbody id="studentsBody">
+                            <tr><td colspan="5"><div class="spinner"></div></td></tr>
+                        </tbody>
+                    </table>
+                </div>
+            </div>
+        </div>
+
+
+        <div class="tab-content" id="tab-attendance">
+            <div class="page-header">
+                <h1>📅 Attendance Records</h1>
+                <p>View and manage all attendance entries</p>
+            </div>
+
+            <div class="card">
+                <div class="card-title">📋 All Attendance</div>
+                <div class="search-bar">
+                    <input class="search-input" id="attSearch" placeholder="🔍 Filter by Student ID..." oninput="filterAttendance()">
+                    <button class="btn btn-success" onclick="loadAttendance()">↻ Refresh</button>
+                </div>
+                <div class="table-wrap">
+                    <table>
+                        <thead>
+                            <tr>
+                                <th>Entry ID</th><th>Student ID</th><th>Student Name</th><th>Date</th><th>Status</th><th>Action</th>
+                            </tr>
+                        </thead>
+                        <tbody id="attBody">
+                            <tr><td colspan="6"><div class="spinner"></div></td></tr>
+                        </tbody>
+                    </table>
+                </div>
+            </div>
+        </div>
+
+
+        <div class="tab-content" id="tab-marks">
+            <div class="page-header">
+                <h1>📝 Marks Records</h1>
+                <p>View and manage all marks entries</p>
+            </div>
+
+            <div class="card">
+                <div class="card-title">📋 All Marks</div>
+                <div class="search-bar">
+                    <input class="search-input" id="marksSearch" placeholder="🔍 Filter by Student ID or Subject..." oninput="filterMarks()">
+                    <button class="btn btn-success" onclick="loadMarks()">↻ Refresh</button>
+                </div>
+                <div class="table-wrap">
+                    <table>
+                        <thead>
+                            <tr>
+                                <th>Entry ID</th><th>Student ID</th><th>Student Name</th><th>Subject</th><th>Score</th><th>Grade</th><th>Action</th>
+                            </tr>
+                        </thead>
+                        <tbody id="marksBody">
+                            <tr><td colspan="7"><div class="spinner"></div></td></tr>
+                        </tbody>
+                    </table>
+                </div>
+            </div>
+        </div>
+
+
+        <div class="tab-content" id="tab-alerts">
+            <div class="page-header">
+                <h1>🔔 Alerts</h1>
+                <p>View all system-generated alerts for students</p>
+            </div>
+
+            <div class="card">
+                <div class="card-title">⚠️ Active Alerts</div>
+                <div class="table-wrap">
+                    <table>
+                        <thead>
+                            <tr>
+                                <th>Alert ID</th><th>Student ID</th><th>Student Name</th><th>Message</th><th>Action</th>
+                            </tr>
+                        </thead>
+                        <tbody id="alertsBody">
+                            <tr><td colspan="5"><div class="spinner"></div></td></tr>
+                        </tbody>
+                    </table>
+                </div>
+            </div>
+        </div>
+
+
+        <div class="tab-content" id="tab-teachers">
+            <div class="page-header">
+                <h1>👨‍🏫 Teacher Management</h1>
+                <p>Add and manage teachers who can enter attendance & marks</p>
+            </div>
+
+
+            <div class="card" style="margin-bottom:20px;">
+                <div class="card-title">➕ Add New Teacher</div>
+                <div class="form-grid">
+                    <div class="form-field">
+                        <label>Full Name</label>
+                        <input type="text" id="tAddName" placeholder="e.g. Kumar Sir">
+                    </div>
+                    <div class="form-field">
+                        <label>Email Address</label>
+                        <input type="email" id="tAddEmail" placeholder="teacher@gmail.com">
+                    </div>
+                    <div class="form-field">
+                        <label>Password</label>
+                        <input type="text" id="tAddPassword" placeholder="Set login password">
+                    </div>
+                    <div class="form-field">
+                        <label>Subject (Optional)</label>
+                        <input type="text" id="tAddSubject" placeholder="e.g. Maths, Science...">
+                    </div>
+                </div>
+                <button class="btn btn-primary" onclick="addTeacher()" id="addTeacherBtn">➕ Add Teacher</button>
+            </div>
+
+
+            <div class="card">
+                <div class="card-title">📋 All Teachers</div>
+                <div class="search-bar">
+                    <button class="btn btn-success" onclick="loadTeachers()">↻ Refresh</button>
+                </div>
+                <div class="table-wrap">
+                    <table>
+                        <thead>
+                            <tr><th>ID</th><th>Name</th><th>Email</th><th>Subject</th><th>Action</th></tr>
+                        </thead>
+                        <tbody id="teachersBody">
+                            <tr><td colspan="5"><div class="spinner"></div></td></tr>
+                        </tbody>
+                    </table>
+                </div>
+            </div>
+        </div>
+
+
+        <div class="tab-content" id="tab-interactive">
+            <div class="page-header">
+                <h1>🎓 Interactive Features</h1>
+                <p>Manage leave requests, fees, announcements, doubts, and study materials</p>
+            </div>
+
+
+            <div style="display:flex;gap:8px;flex-wrap:wrap;margin-bottom:20px;">
+                <button class="btn btn-primary" id="isubtab-leave"    onclick="showISubTab('leave')"    style="opacity:1;">📝 Leaves</button>
+                <button class="btn"             id="isubtab-fees"     onclick="showISubTab('fees')"     style="background:var(--card,rgba(255,255,255,0.05));border:1px solid var(--border,rgba(255,255,255,0.1));color:var(--text-color,#fff);">💰 Fees</button>
+                <button class="btn"             id="isubtab-announce" onclick="showISubTab('announce')" style="background:var(--card,rgba(255,255,255,0.05));border:1px solid var(--border,rgba(255,255,255,0.1));color:var(--text-color,#fff);">📢 Announce</button>
+                <button class="btn"             id="isubtab-doubts"   onclick="showISubTab('doubts')"   style="background:var(--card,rgba(255,255,255,0.05));border:1px solid var(--border,rgba(255,255,255,0.1));color:var(--text-color,#fff);">❓ Doubts</button>
+                <button class="btn"             id="isubtab-materials" onclick="showISubTab('materials')" style="background:var(--card,rgba(255,255,255,0.05));border:1px solid var(--border,rgba(255,255,255,0.1));color:var(--text-color,#fff);">📚 Materials</button>
+            </div>
+
+
+            <div id="isubc-leave">
+                <div class="card">
+                    <div class="card-title">📝 Leave Requests</div>
+                    <div class="table-wrap">
+                        <table><thead><tr><th>Student</th><th>From</th><th>To</th><th>Reason</th><th>Status</th><th>Action</th></tr></thead>
+                        <tbody id="cms-leaveBody"><tr><td colspan="6"><div class="spinner"></div></td></tr></tbody></table>
+                    </div>
+                </div>
+            </div>
+
+
+            <div id="isubc-fees" style="display:none;">
+                <div class="card" style="margin-bottom:16px;">
+                    <div class="card-title">➕ Add Fee Record</div>
+                    <div class="form-grid">
+                        <div class="form-field"><label>Student ID</label><input type="number" id="feeStudentId" placeholder="e.g. 1, 2..."></div>
+                        <div class="form-field"><label>Fee Type</label>
+                            <select id="feeType"><option>TUITION</option><option>EXAM</option><option>LIBRARY</option><option>SPORTS</option><option>OTHER</option></select>
+                        </div>
+                        <div class="form-field"><label>Amount (₹)</label><input type="number" id="feeAmount" placeholder="e.g. 5000"></div>
+                        <div class="form-field"><label>Term</label><input type="text" id="feeTerm" placeholder="e.g. Term 1"></div>
+                    </div>
+                    <button class="btn btn-primary" onclick="addFeeRecord()">➕ Add Fee</button>
+                </div>
+                <div class="card">
+                    <div class="card-title">💰 All Fee Records</div>
+                    <div class="table-wrap">
+                        <table><thead><tr><th>Student</th><th>Type</th><th>Amount</th><th>Term</th><th>Status</th><th>Action</th></tr></thead>
+                        <tbody id="cms-feeBody"><tr><td colspan="6"><div class="spinner"></div></td></tr></tbody></table>
+                    </div>
+                </div>
+            </div>
+
+
+            <div id="isubc-announce" style="display:none;">
+                <div class="card" style="margin-bottom:16px;">
+                    <div class="card-title">📢 Post Announcement</div>
+                    <div class="form-grid">
+                        <div class="form-field"><label>Title</label><input type="text" id="annTitle" placeholder="Announcement title"></div>
+                        <div class="form-field"><label>Priority</label>
+                            <select id="annPriority"><option>NORMAL</option><option>IMPORTANT</option><option>URGENT</option></select>
+                        </div>
+                    </div>
+                    <div class="form-field" style="margin-bottom:14px;"><label>Content</label>
+                        <textarea id="annContent" style="width:100%;padding:11px 14px;background:rgba(255,255,255,0.05);border:1px solid rgba(255,255,255,0.1);border-radius:10px;color:white;font-family:Outfit,sans-serif;font-size:14px;outline:none;resize:none;" rows="3" placeholder="Announcement message..."></textarea>
+                    </div>
+                    <input type="text" id="annPostedBy" placeholder="Your name (e.g. Admin / Teacher Kumar)" style="width:100%;padding:11px 14px;background:rgba(255,255,255,0.05);border:1px solid rgba(255,255,255,0.1);border-radius:10px;color:white;font-family:Outfit,sans-serif;font-size:14px;outline:none;margin-bottom:14px;">
+                    <button class="btn btn-primary" onclick="postAnnouncement()">📢 Post</button>
+                </div>
+                <div class="card">
+                    <div class="card-title">📋 All Announcements</div>
+                    <div id="cms-announceList"><p class="no-data">No announcements.</p></div>
+                </div>
+            </div>
+
+
+            <div id="isubc-doubts" style="display:none;">
+                <div class="card">
+                    <div class="card-title">❓ Student Doubts</div>
+                    <div class="table-wrap">
+                        <table><thead><tr><th>Student</th><th>Subject</th><th>Question</th><th>Status</th><th>Action</th></tr></thead>
+                        <tbody id="cms-doubtBody"><tr><td colspan="5"><div class="spinner"></div></td></tr></tbody></table>
+                    </div>
+                </div>
+            </div>
+
+
+            <div id="isubc-materials" style="display:none;">
+                <div class="card" style="margin-bottom:16px;">
+                    <div class="card-title">📚 Upload Study Material</div>
+                    <div class="form-grid">
+                        <div class="form-field"><label>Title</label><input type="text" id="matTitle" placeholder="e.g. Chapter 5 Notes"></div>
+                        <div class="form-field"><label>Subject</label><input type="text" id="matSubject" placeholder="e.g. Maths"></div>
+                        <div class="form-field"><label>File Type</label>
+                            <select id="matFileType"><option>PDF</option><option>DOC</option><option>IMAGE</option><option>LINK</option></select>
+                        </div>
+                        <div class="form-field"><label>Uploaded By</label><input type="text" id="matUploadedBy" placeholder="Teacher name"></div>
+                    </div>
+                    <div class="form-field" style="margin-bottom:14px;"><label>Description</label>
+                        <input type="text" id="matDesc" placeholder="Brief description..." style="width:100%;padding:11px 14px;background:rgba(255,255,255,0.05);border:1px solid rgba(255,255,255,0.1);border-radius:10px;color:white;font-family:Outfit,sans-serif;font-size:14px;outline:none;">
+                    </div>
+                    <div class="form-field" style="margin-bottom:14px;"><label>File URL / Link</label>
+                        <input type="text" id="matUrl" placeholder="https://... or Google Drive link" style="width:100%;padding:11px 14px;background:rgba(255,255,255,0.05);border:1px solid rgba(255,255,255,0.1);border-radius:10px;color:white;font-family:Outfit,sans-serif;font-size:14px;outline:none;">
+                    </div>
+                    <button class="btn btn-primary" onclick="uploadMaterial()">📤 Upload</button>
+                </div>
+                <div class="card">
+                    <div class="card-title">📋 All Materials</div>
+                    <div id="cms-materialList"><p class="no-data">No materials yet.</p></div>
+                </div>
+            </div>
+        </div>
+
+
+        <div class="tab-content" id="tab-importexport">
+            <div class="page-header">
+                <h1>📦 Import & Export</h1>
+                <p>Bulk upload student data or download records as Excel files</p>
+            </div>
+
+
+            <div class="card" style="margin-bottom:20px;">
+                <div class="card-title">📥 Import Students</div>
+                <p style="font-size:13px;color:rgba(255,255,255,0.4);margin-bottom:20px;">
+                    Upload a <strong style="color:var(--green)">CSV</strong> or <strong style="color:var(--green)">Excel (.xlsx)</strong> file.
+                    Existing emails will be skipped automatically.
+                </p>
+
+                <div style="background:rgba(0,255,136,0.05);border:1px solid rgba(0,255,136,0.15);border-radius:12px;padding:16px;margin-bottom:20px;display:flex;align-items:center;justify-content:space-between;gap:12px;flex-wrap:wrap;">
+                    <div>
+                        <div style="font-size:14px;font-weight:600;color:var(--green);margin-bottom:4px;">📄 Download CSV Template</div>
+                        <div style="font-size:12px;color:rgba(255,255,255,0.4);">Format: name, email, phone, password</div>
+                    </div>
+                    <button class="btn btn-success" onclick="downloadTemplate()">⬇️ Download Template</button>
+                </div>
+
+                <div id="dropZone"
+                    style="border:2px dashed rgba(161,140,209,0.3);border-radius:16px;padding:40px;text-align:center;cursor:pointer;transition:all 0.3s;margin-bottom:16px;"
+                    onclick="document.getElementById('importFile').click()"
+                    ondragover="event.preventDefault();this.style.borderColor='var(--purple)';this.style.background='rgba(161,140,209,0.07)'"
+                    ondragleave="this.style.borderColor='rgba(161,140,209,0.3)';this.style.background=''"
+                    ondrop="handleDrop(event)">
+                    <div style="font-size:36px;margin-bottom:12px;">📁</div>
+                    <div style="font-size:15px;font-weight:600;color:rgba(255,255,255,0.7);margin-bottom:6px;">Click to upload or drag & drop</div>
+                    <div style="font-size:12px;color:rgba(255,255,255,0.35);">Supported: .csv, .xlsx — Max 5MB</div>
+                    <div id="selectedFileName" style="margin-top:12px;font-size:13px;color:var(--purple);display:none;"></div>
+                </div>
+                <input type="file" id="importFile" accept=".csv,.xlsx" style="display:none" onchange="fileSelected(this)">
+
+                <button class="btn btn-primary" id="importBtn" onclick="importStudents()" style="width:100%;">
+                    📥 Import Students
+                </button>
+
+                <div id="importResult" style="display:none;margin-top:20px;"></div>
+            </div>
+
+
+            <div class="card">
+                <div class="card-title">📤 Export Data</div>
+                <p style="font-size:13px;color:rgba(255,255,255,0.4);margin-bottom:20px;">
+                    Download all data as Excel files. Student names are included automatically.
+                </p>
+
+                <div style="display:grid;grid-template-columns:repeat(auto-fit,minmax(210px,1fr));gap:14px;">
+
+                    <div style="background:rgba(116,235,213,0.06);border:1px solid rgba(116,235,213,0.15);border-radius:16px;padding:20px;text-align:center;">
+                        <div style="font-size:32px;margin-bottom:10px;">👥</div>
+                        <div style="font-size:15px;font-weight:600;margin-bottom:6px;">Students List</div>
+                        <div style="font-size:12px;color:rgba(255,255,255,0.4);margin-bottom:16px;">ID, Name, Email, Phone</div>
+                        <button class="btn" style="width:100%;background:rgba(116,235,213,0.15);border:1px solid rgba(116,235,213,0.3);color:var(--cyan);" onclick="exportData('students')">⬇️ Download Excel</button>
+                    </div>
+
+                    <div style="background:rgba(161,140,209,0.06);border:1px solid rgba(161,140,209,0.15);border-radius:16px;padding:20px;text-align:center;">
+                        <div style="font-size:32px;margin-bottom:10px;">📝</div>
+                        <div style="font-size:15px;font-weight:600;margin-bottom:6px;">Marks / Results</div>
+                        <div style="font-size:12px;color:rgba(255,255,255,0.4);margin-bottom:16px;">Student, Subject, Score, Grade</div>
+                        <button class="btn" style="width:100%;background:rgba(161,140,209,0.15);border:1px solid rgba(161,140,209,0.3);color:var(--purple);" onclick="exportData('marks')">⬇️ Download Excel</button>
+                    </div>
+
+                    <div style="background:rgba(0,255,136,0.06);border:1px solid rgba(0,255,136,0.15);border-radius:16px;padding:20px;text-align:center;">
+                        <div style="font-size:32px;margin-bottom:10px;">📅</div>
+                        <div style="font-size:15px;font-weight:600;margin-bottom:6px;">Attendance Records</div>
+                        <div style="font-size:12px;color:rgba(255,255,255,0.4);margin-bottom:16px;">Student, Date, Status</div>
+                        <button class="btn" style="width:100%;background:rgba(0,255,136,0.15);border:1px solid rgba(0,255,136,0.3);color:var(--green);" onclick="exportData('attendance')">⬇️ Download Excel</button>
+                    </div>
+
+                    <div style="background:rgba(255,204,0,0.06);border:1px solid rgba(255,204,0,0.2);border-radius:16px;padding:20px;text-align:center;">
+                        <div style="font-size:32px;margin-bottom:10px;">📊</div>
+                        <div style="font-size:15px;font-weight:600;margin-bottom:6px;">Full Report</div>
+                        <div style="font-size:12px;color:rgba(255,255,255,0.4);margin-bottom:16px;">3 sheets: Students + Marks + Attendance</div>
+                        <button class="btn" style="width:100%;background:rgba(255,204,0,0.15);border:1px solid rgba(255,204,0,0.3);color:var(--yellow);" onclick="exportData('full-report')">⬇️ Full Report Excel</button>
+                    </div>
+
+                </div>
+            </div>
+        </div>
+
+    </div>
+
+    <script>
+        const BASE = "http://localhost:6060";
+
+
+        let studentCache = {};
+        let allStudents = [];
+        let allAttendance = [];
+        let allMarks = [];
+        let allAlerts = [];
+
+
+        function switchTab(name) {
+            document.querySelectorAll('.tab-content').forEach(t => t.classList.remove('active'));
+            document.querySelectorAll('.nav-item').forEach(n => n.classList.remove('active'));
+            document.getElementById('tab-' + name).classList.add('active');
+            event.currentTarget.classList.add('active');
+
+            if (name === 'overview') loadOverview();
+            if (name === 'teachers') loadTeachers();
+            if (name === 'students') loadStudents();
+            if (name === 'attendance') loadAttendance();
+            if (name === 'marks') loadMarks();
+            if (name === 'alerts') loadAlerts();
+            if (name === 'importexport') { /* no load needed */ }
+            if (name === 'interactive') loadInteractive();
+        }
+
+
+        function getStudentName(id) {
+            return studentCache[id] ? studentCache[id] : 'Student #' + id;
+        }
+
+
+        function showToast(msg, type) {
+            const t = document.getElementById('toast');
+            t.className = 'toast ' + type;
+            t.innerText = msg;
+            t.style.display = 'block';
+            clearTimeout(t._t);
+            t._t = setTimeout(() => t.style.display = 'none', 3500);
+        }
+
+
+        function openModal(student) {
+            document.getElementById('editId').value = student.id;
+            document.getElementById('editName').value = student.name || '';
+            document.getElementById('editEmail').value = student.email || '';
+            document.getElementById('editPhone').value = student.phone || '';
+            document.getElementById('editPassword').value = '';
+            document.getElementById('editModal').classList.add('open');
+        }
+
+        function closeModal() {
+            document.getElementById('editModal').classList.remove('open');
+        }
+
+        async function saveEdit() {
+            const id = document.getElementById('editId').value;
+            const payload = {
+                name: document.getElementById('editName').value,
+                email: document.getElementById('editEmail').value,
+                phone: document.getElementById('editPhone').value,
+            };
+            const pass = document.getElementById('editPassword').value;
+            if (pass) payload.password = pass;
+
+            try {
+                const res = await fetch(BASE + '/students/' + id, {
+                    method: 'PUT',
+                    headers: { 'Content-Type': 'application/json' },
+                    body: JSON.stringify(payload)
+                });
+                if (!res.ok) throw new Error(await res.text());
+                closeModal();
+                showToast('Student updated successfully!', 'success');
+                loadStudents();
+                loadOverview();
+            } catch (e) {
+                showToast('Update failed: ' + e.message, 'error');
+            }
+        }
+
+
+        async function loadOverview() {
+            try {
+                const [students, att, marks, alerts] = await Promise.all([
+                    fetch(BASE + '/students').then(r => r.json()),
+                    fetch(BASE + '/attendance/all').then(r => r.json()),
+                    fetch(BASE + '/marks/all').then(r => r.json()),
+                    fetch(BASE + '/alerts').then(r => r.json()),
+                ]);
+
+
+                students.forEach(s => { studentCache[s.id] = s.name; });
+                allStudents = students;
+
+                document.getElementById('ov-students').innerText = students.length;
+                document.getElementById('ov-att').innerText = att.length;
+                document.getElementById('ov-marks').innerText = marks.length;
+                document.getElementById('ov-alerts').innerText = alerts.length;
+
+
+                const tbody = document.getElementById('ovBody');
+                if (students.length === 0) {
+                    tbody.innerHTML = '<tr><td colspan="6" class="empty-state">No students found</td></tr>';
+                    return;
+                }
+
+
+                const marksMap = {};
+                marks.forEach(m => {
+                    if (!marksMap[m.studentId]) marksMap[m.studentId] = [];
+                    marksMap[m.studentId].push(m.marks);
+                });
+
+                const attMap = {};
+                att.forEach(a => {
+                    if (!attMap[a.studentId]) attMap[a.studentId] = { total: 0, present: 0 };
+                    attMap[a.studentId].total++;
+                    if (a.status === 'Present') attMap[a.studentId].present++;
+                });
+
+                tbody.innerHTML = students.map(s => {
+                    const avg = marksMap[s.id] ? (marksMap[s.id].reduce((a,b) => a+b, 0) / marksMap[s.id].length).toFixed(1) : '-';
+                    const attInfo = attMap[s.id];
+                    const attPct = attInfo ? ((attInfo.present / attInfo.total) * 100).toFixed(1) + '%' : '-';
+                    const attColor = attInfo ? (attInfo.present/attInfo.total >= 0.75 ? 'var(--green)' : attInfo.present/attInfo.total >= 0.6 ? 'var(--yellow)' : 'var(--red)') : 'rgba(255,255,255,0.4)';
+
+                    return `<tr>
+                        <td><span class="id-badge">#${s.id}</span></td>
+                        <td style="font-weight:600;color:rgba(255,255,255,0.9)">${s.name}</td>
+                        <td style="color:rgba(255,255,255,0.5)">${s.email}</td>
+                        <td style="color:rgba(255,255,255,0.5)">${s.phone || '-'}</td>
+                        <td style="color:var(--cyan);font-weight:600">${avg}</td>
+                        <td style="color:${attColor};font-weight:600">${attPct}</td>
+                    </tr>`;
+                }).join('');
+
+            } catch (e) {
+                console.error('Overview load failed:', e);
+            }
+        }
+
+
+        async function loadStudents() {
+            document.getElementById('studentsBody').innerHTML = '<tr><td colspan="5"><div class="spinner"></div></td></tr>';
+            try {
+                const students = await fetch(BASE + '/students').then(r => r.json());
+                allStudents = students;
+                students.forEach(s => { studentCache[s.id] = s.name; });
+                renderStudents(students);
+            } catch (e) {
+                document.getElementById('studentsBody').innerHTML = '<tr><td colspan="5" class="empty-state">Failed to load students</td></tr>';
+            }
+        }
+
+        function renderStudents(students) {
+            const tbody = document.getElementById('studentsBody');
+            if (students.length === 0) {
+                tbody.innerHTML = '<tr><td colspan="5" class="empty-state">No students found</td></tr>';
+                return;
+            }
+            tbody.innerHTML = students.map(s => `
+                <tr>
+                    <td><span class="id-badge">#${s.id}</span></td>
+                    <td style="font-weight:600;color:rgba(255,255,255,0.9)">${s.name}</td>
+                    <td style="color:rgba(255,255,255,0.5)">${s.email}</td>
+                    <td style="color:rgba(255,255,255,0.5)">${s.phone || '-'}</td>
+                    <td>
+                        <div class="action-btns">
+                            <button class="btn btn-warning" onclick='openModal(${JSON.stringify(s)})'>✏️ Edit</button>
+                            <button class="btn btn-danger" onclick="deleteStudent(${s.id}, '${s.name}')">🗑️ Delete</button>
+                        </div>
+                    </td>
+                </tr>
+            `).join('');
+        }
+
+        function filterStudents() {
+            const q = document.getElementById('studentSearch').value.toLowerCase();
+            const filtered = allStudents.filter(s =>
+                s.name.toLowerCase().includes(q) || s.email.toLowerCase().includes(q)
+            );
+            renderStudents(filtered);
+        }
+
+        async function addStudent() {
+            const name = document.getElementById('addName').value.trim();
+            const email = document.getElementById('addEmail').value.trim();
+            const phone = document.getElementById('addPhone').value.trim();
+            const password = document.getElementById('addPassword').value.trim();
+
+            if (!name || !email || !password) {
+                showToast('Name, Email, and Password are required!', 'error');
+                return;
+            }
+
+            const btn = document.getElementById('addStudentBtn');
+            btn.disabled = true;
+            btn.innerText = 'Adding...';
+
+            try {
+                const res = await fetch(BASE + '/students', {
+                    method: 'POST',
+                    headers: { 'Content-Type': 'application/json' },
+                    body: JSON.stringify({ name, email, phone, password })
+                });
+
+                if (!res.ok) throw new Error(await res.text());
+
+                showToast('Student ' + name + ' added successfully!', 'success');
+                document.getElementById('addName').value = '';
+                document.getElementById('addEmail').value = '';
+                document.getElementById('addPhone').value = '';
+                document.getElementById('addPassword').value = '';
+                loadStudents();
+                loadOverview();
+            } catch (e) {
+                showToast('Add failed: ' + e.message, 'error');
+            } finally {
+                btn.disabled = false;
+                btn.innerText = '➕ Add Student';
+            }
+        }
+
+        async function deleteStudent(id, name) {
+            if (!confirm('Delete student ' + name + '? This cannot be undone.')) return;
+            try {
+                const res = await fetch(BASE + '/students/' + id, { method: 'DELETE' });
+                if (!res.ok) throw new Error(await res.text());
+                showToast('Student ' + name + ' deleted.', 'info');
+                loadStudents();
+                loadOverview();
+            } catch (e) {
+                showToast('Delete failed: ' + e.message, 'error');
+            }
+        }
+
+
+        async function loadAttendance() {
+            document.getElementById('attBody').innerHTML = '<tr><td colspan="6"><div class="spinner"></div></td></tr>';
+            try {
+                const [att, students] = await Promise.all([
+                    fetch(BASE + '/attendance/all').then(r => r.json()),
+                    fetch(BASE + '/students').then(r => r.json())
+                ]);
+                students.forEach(s => { studentCache[s.id] = s.name; });
+                allAttendance = att;
+                renderAttendance(att);
+            } catch (e) {
+                document.getElementById('attBody').innerHTML = '<tr><td colspan="6" class="empty-state">Failed to load attendance</td></tr>';
+            }
+        }
+
+        function renderAttendance(records) {
+            const tbody = document.getElementById('attBody');
+            if (records.length === 0) {
+                tbody.innerHTML = '<tr><td colspan="6" class="empty-state">No attendance records found</td></tr>';
+                return;
+            }
+            const sorted = [...records].sort((a, b) => new Date(b.attendanceDate) - new Date(a.attendanceDate));
+            tbody.innerHTML = sorted.map(a => {
+                const dateStr = new Date(a.attendanceDate).toLocaleDateString('en-IN', { day:'2-digit', month:'short', year:'numeric' });
+                const pillCls = a.status === 'Present' ? 'pill-present' : 'pill-absent';
+                return `<tr>
+                    <td style="color:rgba(255,255,255,0.35)">${a.id}</td>
+                    <td><span class="id-badge">#${a.studentId}</span></td>
+                    <td style="font-weight:600">${getStudentName(a.studentId)}</td>
+                    <td>${dateStr}</td>
+                    <td><span class="pill ${pillCls}">${a.status}</span></td>
+                    <td><button class="btn btn-danger" onclick="deleteAttendance(${a.id})">🗑️</button></td>
+                </tr>`;
+            }).join('');
+        }
+
+        function filterAttendance() {
+            const q = document.getElementById('attSearch').value.toLowerCase();
+            const filtered = allAttendance.filter(a =>
+                String(a.studentId).includes(q) ||
+                getStudentName(a.studentId).toLowerCase().includes(q)
+            );
+            renderAttendance(filtered);
+        }
+
+        async function deleteAttendance(id) {
+            if (!confirm('Delete this attendance record?')) return;
+            try {
+                const res = await fetch(BASE + '/attendance/' + id, { method: 'DELETE' });
+                if (!res.ok) throw new Error(await res.text());
+                showToast('Attendance record deleted.', 'info');
+                loadAttendance();
+            } catch (e) {
+                showToast('Delete failed: ' + e.message, 'error');
+            }
+        }
+
+
+        async function loadMarks() {
+            document.getElementById('marksBody').innerHTML = '<tr><td colspan="7"><div class="spinner"></div></td></tr>';
+            try {
+                const [marks, students] = await Promise.all([
+                    fetch(BASE + '/marks/all').then(r => r.json()),
+                    fetch(BASE + '/students').then(r => r.json())
+                ]);
+                students.forEach(s => { studentCache[s.id] = s.name; });
+                allMarks = marks;
+                renderMarks(marks);
+            } catch (e) {
+                document.getElementById('marksBody').innerHTML = '<tr><td colspan="7" class="empty-state">Failed to load marks</td></tr>';
+            }
+        }
+
+        function renderMarks(marks) {
+            const tbody = document.getElementById('marksBody');
+            if (marks.length === 0) {
+                tbody.innerHTML = '<tr><td colspan="7" class="empty-state">No marks records found</td></tr>';
+                return;
+            }
+            const sorted = [...marks].sort((a, b) => a.studentId - b.studentId);
+            tbody.innerHTML = sorted.map(m => {
+                const grade = m.marks >= 75 ? ['pill-good', 'Good'] : m.marks >= 40 ? ['pill-avg', 'Average'] : ['pill-low', 'Below Pass'];
+                return `<tr>
+                    <td style="color:rgba(255,255,255,0.35)">${m.id}</td>
+                    <td><span class="id-badge">#${m.studentId}</span></td>
+                    <td style="font-weight:600">${getStudentName(m.studentId)}</td>
+                    <td style="color:var(--purple)">${m.subject}</td>
+                    <td style="font-weight:700;color:var(--cyan)">${m.marks}/100</td>
+                    <td><span class="pill ${grade[0]}">${grade[1]}</span></td>
+                    <td><button class="btn btn-danger" onclick="deleteMarks(${m.id})">🗑️</button></td>
+                </tr>`;
+            }).join('');
+        }
+
+        function filterMarks() {
+            const q = document.getElementById('marksSearch').value.toLowerCase();
+            const filtered = allMarks.filter(m =>
+                String(m.studentId).includes(q) ||
+                m.subject.toLowerCase().includes(q) ||
+                getStudentName(m.studentId).toLowerCase().includes(q)
+            );
+            renderMarks(filtered);
+        }
+
+        async function deleteMarks(id) {
+            if (!confirm('Delete this marks entry?')) return;
+            try {
+                const res = await fetch(BASE + '/marks/' + id, { method: 'DELETE' });
+                if (!res.ok) throw new Error(await res.text());
+                showToast('Marks entry deleted.', 'info');
+                loadMarks();
+            } catch (e) {
+                showToast('Delete failed: ' + e.message, 'error');
+            }
+        }
+
+
+        async function loadAlerts() {
+            document.getElementById('alertsBody').innerHTML = '<tr><td colspan="5"><div class="spinner"></div></td></tr>';
+            try {
+                const [alerts, students] = await Promise.all([
+                    fetch(BASE + '/alerts').then(r => r.json()),
+                    fetch(BASE + '/students').then(r => r.json())
+                ]);
+                students.forEach(s => { studentCache[s.id] = s.name; });
+                allAlerts = alerts;
+
+                const tbody = document.getElementById('alertsBody');
+                if (alerts.length === 0) {
+                    tbody.innerHTML = '<tr><td colspan="5" class="empty-state">No active alerts — all students are good!</td></tr>';
+                    return;
+                }
+                tbody.innerHTML = alerts.map(a => `
+                    <tr>
+                        <td style="color:rgba(255,255,255,0.35)">${a.id}</td>
+                        <td><span class="id-badge">#${a.studentId}</span></td>
+                        <td style="font-weight:600">${getStudentName(a.studentId)}</td>
+                        <td style="color:var(--red)">⚠️ ${a.message}</td>
+                        <td><button class="btn btn-danger" onclick="deleteAlert(${a.id})">🗑️ Dismiss</button></td>
+                    </tr>
+                `).join('');
+            } catch (e) {
+                document.getElementById('alertsBody').innerHTML = '<tr><td colspan="5" class="empty-state">Failed to load alerts</td></tr>';
+            }
+        }
+
+        async function deleteAlert(id) {
+            if (!confirm('Dismiss this alert?')) return;
+            try {
+                const res = await fetch(BASE + '/alerts/' + id, { method: 'DELETE' });
+                if (!res.ok) throw new Error(await res.text());
+                showToast('Alert dismissed.', 'info');
+                loadAlerts();
+            } catch (e) {
+                showToast('Failed: ' + e.message, 'error');
+            }
+        }
+
+
+        document.getElementById('editModal').addEventListener('click', function(e) {
+            if (e.target === this) closeModal();
+        });
+
+
+
+        let selectedFile = null;
+
+        function fileSelected(input) {
+            selectedFile = input.files[0];
+            if (selectedFile) {
+                document.getElementById('selectedFileName').style.display = 'block';
+                document.getElementById('selectedFileName').innerText = '✓ ' + selectedFile.name + ' (' + (selectedFile.size / 1024).toFixed(1) + ' KB)';
+                document.getElementById('dropZone').style.borderColor = 'var(--purple)';
+            }
+        }
+
+        function handleDrop(e) {
+            e.preventDefault();
+            document.getElementById('dropZone').style.borderColor = 'rgba(161,140,209,0.3)';
+            document.getElementById('dropZone').style.background = '';
+            const file = e.dataTransfer.files[0];
+            if (file) {
+                selectedFile = file;
+                document.getElementById('selectedFileName').style.display = 'block';
+                document.getElementById('selectedFileName').innerText = '✓ ' + file.name + ' (' + (file.size / 1024).toFixed(1) + ' KB)';
+                document.getElementById('dropZone').style.borderColor = 'var(--purple)';
+            }
+        }
+
+        function downloadTemplate() {
+            window.location.href = BASE + '/api/import/template';
+        }
+
+        async function importStudents() {
+            if (!selectedFile) { showToast('Please select a CSV or Excel file first!', 'error'); return; }
+            const btn = document.getElementById('importBtn');
+            btn.disabled = true;
+            btn.innerText = '⏳ Importing...';
+            const formData = new FormData();
+            formData.append('file', selectedFile);
+            try {
+                const res = await fetch(BASE + '/api/import/students', { method: 'POST', body: formData });
+                const data = await res.json();
+                if (!res.ok) { showToast('Import failed: ' + data, 'error'); return; }
+
+                const resultDiv = document.getElementById('importResult');
+                resultDiv.style.display = 'block';
+                let html = `<div style="background:rgba(0,255,136,0.06);border:1px solid rgba(0,255,136,0.2);border-radius:12px;padding:16px;margin-bottom:12px;">
+                    <div style="font-size:15px;font-weight:600;color:var(--green);margin-bottom:8px;">✅ Import Complete!</div>
+                    <div style="font-size:13px;color:rgba(255,255,255,0.6);">
+                        <span style="color:var(--green);font-weight:700;">${data.successCount} students added</span>
+                        &nbsp;•&nbsp;
+                        <span style="color:var(--yellow);">${data.skipCount} skipped (already exist)</span>
+                    </div></div>`;
+                if (data.details && data.details.length > 0) {
+                    html += '<div style="max-height:200px;overflow-y:auto;">';
+                    data.details.forEach(d => {
+                        const ok = d.status === 'SUCCESS';
+                        html += `<div style="padding:8px 12px;margin-bottom:6px;border-radius:8px;background:${ok?'rgba(0,255,136,0.06)':'rgba(255,204,0,0.06)'};border-left:3px solid ${ok?'var(--green)':'var(--yellow)'};font-size:13px;">
+                            <strong>${d.name}</strong> — <span style="color:${ok?'var(--green)':'var(--yellow)'}">${d.status}</span></div>`;
+                    });
+                    html += '</div>';
+                }
+                resultDiv.innerHTML = html;
+                showToast(data.successCount + ' students imported!', 'success');
+                selectedFile = null;
+                document.getElementById('importFile').value = '';
+                document.getElementById('selectedFileName').style.display = 'none';
+                document.getElementById('dropZone').style.borderColor = 'rgba(161,140,209,0.3)';
+                loadStudents();
+                loadOverview();
+            } catch (e) {
+                showToast('Import failed: ' + e.message, 'error');
+            } finally {
+                btn.disabled = false;
+                btn.innerText = '📥 Import Students';
+            }
+        }
+
+        async function exportData(type) {
+            showToast('Preparing ' + type + ' export...', 'info');
+            try {
+                const res = await fetch(BASE + '/api/export/' + type);
+                if (!res.ok) throw new Error('Export failed');
+                const blob = await res.blob();
+                const url = window.URL.createObjectURL(blob);
+                const a = document.createElement('a');
+                a.href = url;
+                a.download = type + '.xlsx';
+                document.body.appendChild(a);
+                a.click();
+                document.body.removeChild(a);
+                window.URL.revokeObjectURL(url);
+                showToast(type + ' exported successfully!', 'success');
+            } catch (e) {
+                showToast('Export failed: ' + e.message, 'error');
+            }
+        }
+
+  
+        async function loadTeachers() {
+            document.getElementById('teachersBody').innerHTML = '<tr><td colspan="5"><div class="spinner"></div></td></tr>';
+            try {
+                const teachers = await fetch(BASE + '/teachers').then(r => r.json());
+                const tbody = document.getElementById('teachersBody');
+                if (teachers.length === 0) {
+                    tbody.innerHTML = '<tr><td colspan="5" class="empty-state">No teachers added yet</td></tr>';
+                    return;
+                }
+                tbody.innerHTML = teachers.map(t => `
+                    <tr>
+                        <td><span class="id-badge">#${t.id}</span></td>
+                        <td style="font-weight:600;color:rgba(255,255,255,0.9)">${t.name}</td>
+                        <td style="color:rgba(255,255,255,0.5)">${t.email}</td>
+                        <td style="color:var(--purple)">${t.subject || '-'}</td>
+                        <td><button class="btn btn-danger" onclick="deleteTeacher(${t.id}, '${t.name}')">🗑️ Delete</button></td>
+                    </tr>
+                `).join('');
+            } catch (e) {
+                document.getElementById('teachersBody').innerHTML = '<tr><td colspan="5" class="empty-state">Failed to load teachers</td></tr>';
+            }
+        }
+
+        async function addTeacher() {
+            const name     = document.getElementById('tAddName').value.trim();
+            const email    = document.getElementById('tAddEmail').value.trim();
+            const password = document.getElementById('tAddPassword').value.trim();
+            const subject  = document.getElementById('tAddSubject').value.trim();
+
+            if (!name || !email || !password) { showToast('Name, Email and Password are required!', 'error'); return; }
+
+            const btn = document.getElementById('addTeacherBtn');
+            btn.disabled = true; btn.innerText = 'Adding...';
+
+            try {
+                const res = await fetch(BASE + '/teachers', {
+                    method: 'POST',
+                    headers: { 'Content-Type': 'application/json' },
+                    body: JSON.stringify({ name, email, password, subject })
+                });
+                if (!res.ok) throw new Error(await res.text());
+                showToast('Teacher ' + name + ' added!', 'success');
+                document.getElementById('tAddName').value = '';
+                document.getElementById('tAddEmail').value = '';
+                document.getElementById('tAddPassword').value = '';
+                document.getElementById('tAddSubject').value = '';
+                loadTeachers();
+            } catch (e) {
+                showToast('Add failed: ' + e.message, 'error');
+            } finally {
+                btn.disabled = false; btn.innerText = '➕ Add Teacher';
+            }
+        }
+
+        async function deleteTeacher(id, name) {
+            if (!confirm('Delete teacher ' + name + '?')) return;
+            try {
+                const res = await fetch(BASE + '/teachers/' + id, { method: 'DELETE' });
+                if (!res.ok) throw new Error(await res.text());
+                showToast('Teacher ' + name + ' deleted.', 'info');
+                loadTeachers();
+            } catch (e) {
+                showToast('Delete failed: ' + e.message, 'error');
+            }
+        }
+
+
+        const BASE_URL = BASE;
+
+        function showISubTab(name) {
+            ['leave','fees','announce','doubts','materials'].forEach(t => {
+                document.getElementById('isubc-' + t).style.display = t === name ? 'block' : 'none';
+                const btn = document.getElementById('isubtab-' + t);
+                btn.style.background = t === name ? 'linear-gradient(135deg,var(--purple,#a18cd1),#7b2ff7)' : 'var(--card,rgba(255,255,255,0.05))';
+                btn.style.color = t === name ? '#fff' : 'var(--text-color,#fff)';
+            });
+            if (name === 'leave') loadCmsLeaves();
+            if (name === 'fees') loadCmsFees();
+            if (name === 'announce') loadCmsAnnouncements();
+            if (name === 'doubts') loadCmsDoubts();
+            if (name === 'materials') loadCmsMaterials();
+        }
+
+        function loadInteractive() { loadCmsLeaves(); }
+
+
+        async function loadCmsLeaves() {
+            try {
+                const [leaves, students] = await Promise.all([
+                    fetch(BASE + '/leave/all').then(r => r.json()),
+                    fetch(BASE + '/students').then(r => r.json())
+                ]);
+                students.forEach(s => { studentCache[s.id] = s.name; });
+                const tbody = document.getElementById('cms-leaveBody');
+                if (!leaves.length) { tbody.innerHTML = '<tr><td colspan="6" class="empty-state">No leave requests</td></tr>'; return; }
+                tbody.innerHTML = leaves.map(l => `<tr>
+                    <td><span class="id-badge">#${l.studentId}</span> ${getStudentName(l.studentId)}</td>
+                    <td>${l.fromDate}</td><td>${l.toDate}</td>
+                    <td style="max-width:180px;overflow:hidden;text-overflow:ellipsis;white-space:nowrap;">${l.reason}</td>
+                    <td><span class="pill ${l.status==='APPROVED'?'pill-present':l.status==='REJECTED'?'pill-absent':'pill-avg'}">${l.status}</span></td>
+                    <td>
+                        <div style="display:flex;gap:6px;">
+                            <button class="btn btn-success" style="padding:6px 10px;font-size:12px;" onclick="updateLeave(${l.id},'APPROVED','')">✅</button>
+                            <button class="btn btn-danger"  style="padding:6px 10px;font-size:12px;" onclick="updateLeave(${l.id},'REJECTED','')">❌</button>
+                        </div>
+                    </td></tr>`).join('');
+            } catch(e) { document.getElementById('cms-leaveBody').innerHTML = '<tr><td colspan="6" class="empty-state">Failed to load</td></tr>'; }
+        }
+
+        async function updateLeave(id, status, note) {
+            try {
+                await fetch(BASE + '/leave/' + id + '/status?status=' + status + (note ? '&note=' + note : ''), { method: 'PUT' });
+                showToast(status === 'APPROVED' ? 'Leave approved!' : 'Leave rejected.', status === 'APPROVED' ? 'success' : 'error');
+                loadCmsLeaves();
+            } catch { showToast('Update failed', 'error'); }
+        }
+
+
+        async function loadCmsFees() {
+            try {
+                const [fees, students] = await Promise.all([
+                    fetch(BASE + '/fees/all').then(r => r.json()),
+                    fetch(BASE + '/students').then(r => r.json())
+                ]);
+                students.forEach(s => { studentCache[s.id] = s.name; });
+                const tbody = document.getElementById('cms-feeBody');
+                if (!fees.length) { tbody.innerHTML = '<tr><td colspan="6" class="empty-state">No fee records</td></tr>'; return; }
+                tbody.innerHTML = fees.map(f => `<tr>
+                    <td><span class="id-badge">#${f.studentId}</span> ${getStudentName(f.studentId)}</td>
+                    <td>${f.feeType}</td><td style="color:var(--cyan,#74ebd5);font-weight:600;">₹${f.amount}</td>
+                    <td>${f.term || '-'}</td>
+                    <td><span class="pill ${f.status==='PAID'?'pill-present':f.status==='OVERDUE'?'pill-absent':'pill-avg'}">${f.status}</span></td>
+                    <td>
+                        <div style="display:flex;gap:6px;">
+                            <button class="btn btn-success" style="padding:6px 10px;font-size:12px;" onclick="updateFee(${f.id},'PAID')">✅ Paid</button>
+                            <button class="btn btn-danger"  style="padding:6px 10px;font-size:12px;" onclick="updateFee(${f.id},'OVERDUE')">⚠️ Overdue</button>
+                            <button class="btn btn-danger"  style="padding:6px 10px;font-size:12px;" onclick="deleteFee(${f.id})">🗑️</button>
+                        </div>
+                    </td></tr>`).join('');
+            } catch { document.getElementById('cms-feeBody').innerHTML = '<tr><td colspan="6" class="empty-state">Failed</td></tr>'; }
+        }
+
+        async function addFeeRecord() {
+            const sid = document.getElementById('feeStudentId').value;
+            const type = document.getElementById('feeType').value;
+            const amount = document.getElementById('feeAmount').value;
+            const term = document.getElementById('feeTerm').value;
+            if (!sid || !amount) { showToast('Student ID and Amount required!', 'error'); return; }
+            await fetch(BASE + '/fees', { method:'POST', headers:{'Content-Type':'application/json'}, body: JSON.stringify({studentId:parseInt(sid), feeType:type, amount:parseFloat(amount), term}) });
+            showToast('Fee record added!', 'success');
+            document.getElementById('feeStudentId').value = '';
+            document.getElementById('feeAmount').value = '';
+            document.getElementById('feeTerm').value = '';
+            loadCmsFees();
+        }
+
+        async function updateFee(id, status) {
+            await fetch(BASE + '/fees/' + id + '/status?status=' + status, { method: 'PUT' });
+            showToast('Fee status updated!', 'success');
+            loadCmsFees();
+        }
+
+        async function deleteFee(id) {
+            if (!confirm('Delete this fee record?')) return;
+            await fetch(BASE + '/fees/' + id, { method: 'DELETE' });
+            showToast('Deleted.', 'info');
+            loadCmsFees();
+        }
+
+
+        async function loadCmsAnnouncements() {
+            try {
+                const data = await fetch(BASE + '/announcements').then(r => r.json());
+                const div = document.getElementById('cms-announceList');
+                if (!data.length) { div.innerHTML = '<p class="no-data">No announcements.</p>'; return; }
+                div.innerHTML = data.map(a => `
+                    <div style="background:var(--card,rgba(255,255,255,0.04));border:1px solid var(--border,rgba(255,255,255,0.08));border-radius:12px;padding:14px 16px;margin-bottom:10px;display:flex;justify-content:space-between;align-items:flex-start;gap:12px;">
+                        <div>
+                            <div style="font-size:14px;font-weight:700;margin-bottom:6px;">${a.title} <span class="pill ${a.priority==='URGENT'?'pill-absent':a.priority==='IMPORTANT'?'pill-avg':'pill-present'}" style="font-size:10px;">${a.priority}</span></div>
+                            <div style="font-size:13px;color:rgba(255,255,255,0.6);">${a.content}</div>
+                            <div style="font-size:11px;color:rgba(255,255,255,0.3);margin-top:6px;">By ${a.postedBy}</div>
+                        </div>
+                        <button class="btn btn-danger" style="flex-shrink:0;padding:6px 10px;font-size:12px;" onclick="deleteAnnouncement(${a.id})">🗑️</button>
+                    </div>`).join('');
+            } catch { document.getElementById('cms-announceList').innerHTML = '<p class="no-data">Failed to load.</p>'; }
+        }
+
+        async function postAnnouncement() {
+            const title = document.getElementById('annTitle').value.trim();
+            const content = document.getElementById('annContent').value.trim();
+            const postedBy = document.getElementById('annPostedBy').value.trim() || 'Admin';
+            const priority = document.getElementById('annPriority').value;
+            if (!title || !content) { showToast('Title and content required!', 'error'); return; }
+            await fetch(BASE + '/announcements', { method:'POST', headers:{'Content-Type':'application/json'}, body: JSON.stringify({title, content, postedBy, priority}) });
+            showToast('Announcement posted!', 'success');
+            document.getElementById('annTitle').value = '';
+            document.getElementById('annContent').value = '';
+            loadCmsAnnouncements();
+        }
+
+        async function deleteAnnouncement(id) {
+            if (!confirm('Delete this announcement?')) return;
+            await fetch(BASE + '/announcements/' + id, { method: 'DELETE' });
+            showToast('Deleted.', 'info');
+            loadCmsAnnouncements();
+        }
+
+
+        async function loadCmsDoubts() {
+            try {
+                const [doubts, students] = await Promise.all([
+                    fetch(BASE + '/doubts/all').then(r => r.json()),
+                    fetch(BASE + '/students').then(r => r.json())
+                ]);
+                students.forEach(s => { studentCache[s.id] = s.name; });
+                const tbody = document.getElementById('cms-doubtBody');
+                if (!doubts.length) { tbody.innerHTML = '<tr><td colspan="5" class="empty-state">No doubts submitted</td></tr>'; return; }
+                tbody.innerHTML = doubts.map(d => `<tr>
+                    <td><span class="id-badge">#${d.studentId}</span> ${getStudentName(d.studentId)}</td>
+                    <td style="color:var(--purple,#a18cd1);">${d.subject}</td>
+                    <td style="max-width:220px;">${d.question}</td>
+                    <td><span class="pill ${d.status==='ANSWERED'?'pill-present':'pill-avg'}">${d.status}</span></td>
+                    <td>
+                        ${d.status==='OPEN' ? `<div style="display:flex;gap:6px;"><input type="text" id="ans_${d.id}" placeholder="Type answer..." style="padding:6px 10px;background:rgba(255,255,255,0.06);border:1px solid rgba(255,255,255,0.1);border-radius:8px;color:white;font-family:Outfit,sans-serif;font-size:12px;outline:none;flex:1;"><button class="btn btn-success" style="padding:6px 10px;font-size:12px;" onclick="answerDoubt(${d.id})">Reply</button></div>` : `<span style="font-size:12px;color:rgba(255,255,255,0.4);">Answered ✓</span>`}
+                    </td></tr>`).join('');
+            } catch { document.getElementById('cms-doubtBody').innerHTML = '<tr><td colspan="5" class="empty-state">Failed</td></tr>'; }
+        }
+
+        async function answerDoubt(id) {
+            const answer = document.getElementById('ans_' + id).value.trim();
+            if (!answer) { showToast('Please type an answer!', 'error'); return; }
+            await fetch(BASE + '/doubts/' + id + '/answer?answer=' + encodeURIComponent(answer), { method: 'PUT' });
+            showToast('Answer submitted!', 'success');
+            loadCmsDoubts();
+        }
+
+
+        async function loadCmsMaterials() {
+            try {
+                const data = await fetch(BASE + '/materials').then(r => r.json());
+                const div = document.getElementById('cms-materialList');
+                if (!data.length) { div.innerHTML = '<p class="no-data">No materials uploaded.</p>'; return; }
+                div.innerHTML = data.map(m => `
+                    <div style="background:var(--card,rgba(255,255,255,0.04));border:1px solid var(--border,rgba(255,255,255,0.08));border-radius:12px;padding:14px 16px;margin-bottom:10px;display:flex;justify-content:space-between;align-items:center;gap:12px;">
+                        <div>
+                            <div style="font-size:14px;font-weight:700;">${m.title} <span style="font-size:11px;background:rgba(161,140,209,0.12);color:#a18cd1;padding:2px 8px;border-radius:6px;">${m.fileType}</span></div>
+                            <div style="font-size:12px;color:rgba(255,255,255,0.45);margin-top:3px;">${m.subject} • ${m.uploadedBy}</div>
+                        </div>
+                        <div style="display:flex;gap:8px;">
+                            ${m.fileUrl ? '<a href="' + m.fileUrl + '" target="_blank" style="padding:6px 12px;background:rgba(0,255,136,0.1);border:1px solid rgba(0,255,136,0.2);border-radius:8px;color:#00ff88;font-size:12px;text-decoration:none;">⬇️</a>' : ''}
+                            <button class="btn btn-danger" style="padding:6px 10px;font-size:12px;" onclick="deleteMaterial(${m.id})">🗑️</button>
+                        </div>
+                    </div>`).join('');
+            } catch { document.getElementById('cms-materialList').innerHTML = '<p class="no-data">Failed.</p>'; }
+        }
+
+        async function uploadMaterial() {
+            const title = document.getElementById('matTitle').value.trim();
+            const subject = document.getElementById('matSubject').value.trim();
+            const fileType = document.getElementById('matFileType').value;
+            const uploadedBy = document.getElementById('matUploadedBy').value.trim() || 'Teacher';
+            const description = document.getElementById('matDesc').value.trim();
+            const fileUrl = document.getElementById('matUrl').value.trim();
+            if (!title || !subject) { showToast('Title and subject required!', 'error'); return; }
+            await fetch(BASE + '/materials', { method:'POST', headers:{'Content-Type':'application/json'}, body: JSON.stringify({title, subject, fileType, uploadedBy, description, fileUrl}) });
+            showToast('Material uploaded!', 'success');
+            ['matTitle','matSubject','matUploadedBy','matDesc','matUrl'].forEach(id => document.getElementById(id).value = '');
+            loadCmsMaterials();
+        }
+
+        async function deleteMaterial(id) {
+            if (!confirm('Delete this material?')) return;
+            await fetch(BASE + '/materials/' + id, { method: 'DELETE' });
+            showToast('Deleted.', 'info');
+            loadCmsMaterials();
+        }
+
+
+        loadOverview();
+    </script>
+</body>
+</html>

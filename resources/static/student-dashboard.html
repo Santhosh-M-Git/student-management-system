@@ -1,0 +1,1278 @@
+<!DOCTYPE html>
+<html lang="en">
+
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Student Dashboard | SMS</title>
+    <link href="https://fonts.googleapis.com/css2?family=Outfit:wght@300;400;600;700&display=swap" rel="stylesheet">
+    <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
+    <style>
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+        }
+
+        :root {
+            --primary: #00ff88;
+            --secondary: #00d2ff;
+            --bg: #020f0a;
+            --card: rgba(255, 255, 255, 0.04);
+            --border-color: rgba(255, 255, 255, 0.08);
+            --text-color: #fff;
+            --text-muted: rgba(255, 255, 255, 0.45);
+            --input-bg: rgba(255, 255, 255, 0.06);
+            --input-border: rgba(255, 255, 255, 0.1);
+        }
+
+        body {
+            font-family: 'Outfit', sans-serif;
+            background: var(--bg);
+            background: linear-gradient(135deg, #020f0a, #00332e);
+            color: var(--text-color);
+            min-height: 100vh;
+            display: flex;
+        }
+
+        body::before {
+            content: '';
+            position: fixed;
+            inset: 0;
+            background-image:
+                linear-gradient(rgba(0, 255, 136, 0.02) 1px, transparent 1px),
+                linear-gradient(90deg, rgba(0, 255, 136, 0.02) 1px, transparent 1px);
+            background-size: 60px 60px;
+            pointer-events: none;
+            z-index: 0;
+        }
+
+
+        .sidebar {
+            position: fixed;
+            left: 0;
+            top: 0;
+            bottom: 0;
+            width: 220px;
+            background: rgba(0, 0, 0, 0.3);
+            border-right: 1px solid var(--border-color);
+            padding: 24px 14px;
+            display: flex;
+            flex-direction: column;
+            gap: 4px;
+            z-index: 100;
+            backdrop-filter: blur(10px);
+        }
+
+        .sidebar-brand {
+            padding: 0 10px 20px;
+            border-bottom: 1px solid var(--border-color);
+            margin-bottom: 10px;
+        }
+
+        .student-profile {
+            display: flex;
+            align-items: center;
+            gap: 10px;
+        }
+
+        .s-avatar {
+            width: 40px;
+            height: 40px;
+            border-radius: 12px;
+            background: linear-gradient(135deg, var(--primary), var(--secondary));
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            font-size: 18px;
+            font-weight: 700;
+            color: #020f0a;
+            flex-shrink: 0;
+        }
+
+        .s-info h3 {
+            font-size: 14px;
+            font-weight: 700;
+            color: var(--text-color);
+            white-space: nowrap;
+            overflow: hidden;
+            text-overflow: ellipsis;
+            max-width: 130px;
+        }
+
+        .s-info p {
+            font-size: 11px;
+            color: var(--text-muted);
+        }
+
+        .nav-group-label {
+            font-size: 10px;
+            font-weight: 700;
+            letter-spacing: 0.1em;
+            text-transform: uppercase;
+            color: var(--text-muted);
+            padding: 10px 10px 4px;
+        }
+
+        .nav-item {
+            display: flex;
+            align-items: center;
+            gap: 10px;
+            padding: 10px 12px;
+            border-radius: 10px;
+            font-size: 13px;
+            font-weight: 500;
+            color: var(--text-muted);
+            cursor: pointer;
+            transition: all 0.2s;
+            border: 1px solid transparent;
+        }
+
+        .nav-item:hover {
+            color: var(--text-color);
+            background: rgba(255, 255, 255, 0.05);
+        }
+
+        .nav-item.active {
+            color: var(--primary);
+            background: rgba(0, 255, 136, 0.08);
+            border-color: rgba(0, 255, 136, 0.18);
+        }
+
+        .nav-icon {
+            font-size: 16px;
+            width: 20px;
+            text-align: center;
+        }
+
+        .sidebar-bottom {
+            margin-top: auto;
+            border-top: 1px solid var(--border-color);
+            padding-top: 12px;
+        }
+
+        .logout-nav {
+            display: flex;
+            align-items: center;
+            gap: 10px;
+            padding: 10px 12px;
+            border-radius: 10px;
+            font-size: 13px;
+            font-weight: 500;
+            color: #ff6b6b;
+            cursor: pointer;
+            transition: all 0.2s;
+        }
+
+        .logout-nav:hover {
+            background: rgba(255, 68, 68, 0.1);
+        }
+
+
+        .main {
+            margin-left: 220px;
+            padding: 24px;
+            position: relative;
+            z-index: 1;
+            min-height: 100vh;
+            flex: 1;
+        }
+
+
+        .page {
+            display: none;
+        }
+
+        .page.active {
+            display: block;
+        }
+
+        .page-header {
+            margin-bottom: 24px;
+        }
+
+        .page-header h1 {
+            font-size: 22px;
+            font-weight: 700;
+            letter-spacing: -0.3px;
+        }
+
+        .page-header p {
+            font-size: 13px;
+            color: var(--text-muted);
+            margin-top: 4px;
+        }
+
+
+        .card {
+            background: var(--card);
+            border: 1px solid var(--border-color);
+            border-radius: 18px;
+            padding: 20px;
+            margin-bottom: 16px;
+        }
+
+        .card-title {
+            font-size: 15px;
+            font-weight: 600;
+            margin-bottom: 16px;
+            display: flex;
+            align-items: center;
+            gap: 8px;
+        }
+
+
+        .stats-grid {
+            display: grid;
+            grid-template-columns: repeat(auto-fit, minmax(180px, 1fr));
+            gap: 14px;
+            margin-bottom: 16px;
+        }
+
+        .stat-card {
+            background: var(--card);
+            border: 1px solid var(--border-color);
+            border-radius: 16px;
+            padding: 18px;
+            text-align: center;
+            transition: 0.3s;
+            position: relative;
+            overflow: hidden;
+        }
+
+        .stat-card::before {
+            content: '';
+            position: absolute;
+            top: 0;
+            left: 0;
+            right: 0;
+            height: 2px;
+        }
+
+        .stat-card.att-card::before {
+            background: linear-gradient(90deg, var(--primary), var(--secondary));
+        }
+
+        .stat-card.marks-card::before {
+            background: linear-gradient(90deg, var(--secondary), #0099ff);
+        }
+
+        .stat-card.alert-card::before {
+            background: linear-gradient(90deg, #ffcc00, #ff9900);
+        }
+
+        .stat-card:hover {
+            transform: translateY(-3px);
+        }
+
+        .stat-label {
+            font-size: 11px;
+            font-weight: 600;
+            letter-spacing: 0.08em;
+            text-transform: uppercase;
+            color: var(--text-muted);
+            margin-bottom: 8px;
+        }
+
+        .stat-value {
+            font-size: 28px;
+            font-weight: 700;
+            letter-spacing: -1px;
+            margin-bottom: 10px;
+        }
+
+        .att-good {
+            color: var(--primary) !important;
+        }
+
+        .att-warning {
+            color: #ffcc00 !important;
+        }
+
+        .att-danger {
+            color: #ff4444 !important;
+        }
+
+        .chart-container {
+            width: 100px;
+            height: 100px;
+            margin: 0 auto;
+        }
+
+
+        .section {
+            background: var(--card);
+            border: 1px solid var(--border-color);
+            border-radius: 18px;
+            padding: 20px;
+            margin-bottom: 16px;
+        }
+
+        .section-header {
+            display: flex;
+            align-items: center;
+            gap: 10px;
+            margin-bottom: 16px;
+        }
+
+        .section-icon {
+            width: 32px;
+            height: 32px;
+            border-radius: 10px;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            font-size: 14px;
+        }
+
+        .icon-green {
+            background: rgba(0, 255, 136, 0.1);
+        }
+
+        .icon-blue {
+            background: rgba(0, 210, 255, 0.1);
+        }
+
+        .icon-yellow {
+            background: rgba(255, 204, 0, 0.1);
+        }
+
+        .section-header h2 {
+            font-size: 16px;
+            font-weight: 600;
+        }
+
+        .no-data {
+            font-size: 13px;
+            color: var(--text-muted);
+            text-align: center;
+            padding: 20px 0;
+        }
+
+
+        .alert-item {
+            background: rgba(255, 68, 68, 0.08);
+            border: 1px solid rgba(255, 68, 68, 0.2);
+            border-left: 3px solid #ff4444;
+            padding: 12px 14px;
+            border-radius: 0 10px 10px 0;
+            margin-bottom: 8px;
+            font-size: 13px;
+        }
+
+
+        .insights-grid {
+            display: grid;
+            grid-template-columns: 1fr 1fr;
+            gap: 12px;
+        }
+
+        .insight-card {
+            border-radius: 12px;
+            padding: 14px;
+        }
+
+        .insight-card.prediction {
+            background: rgba(0, 255, 136, 0.06);
+            border: 1px solid rgba(0, 255, 136, 0.15);
+        }
+
+        .insight-card.suggestion {
+            background: rgba(255, 204, 0, 0.06);
+            border: 1px solid rgba(255, 204, 0, 0.15);
+        }
+
+        .insight-label {
+            font-size: 10px;
+            font-weight: 600;
+            letter-spacing: 0.08em;
+            text-transform: uppercase;
+            margin-bottom: 6px;
+            opacity: 0.6;
+        }
+
+        .prediction .insight-label {
+            color: var(--primary);
+        }
+
+        .suggestion .insight-label {
+            color: #ffcc00;
+        }
+
+        .insight-text {
+            font-size: 13px;
+            line-height: 1.6;
+            font-weight: 500;
+        }
+
+        .prediction .insight-text {
+            color: var(--primary);
+        }
+
+        .suggestion .insight-text {
+            color: #ffcc00;
+        }
+
+
+        .att-table {
+            width: 100%;
+            border-collapse: collapse;
+            font-size: 13px;
+        }
+
+        .att-table th {
+            text-align: left;
+            padding: 8px 12px;
+            font-size: 11px;
+            text-transform: uppercase;
+            letter-spacing: 0.08em;
+            color: var(--text-muted);
+            border-bottom: 1px solid var(--border-color);
+        }
+
+        .att-table td {
+            padding: 10px 12px;
+            border-bottom: 1px solid rgba(255, 255, 255, 0.04);
+            color: rgba(255, 255, 255, 0.75);
+        }
+
+        .att-table tr:last-child td {
+            border-bottom: none;
+        }
+
+        .pill {
+            display: inline-block;
+            padding: 3px 10px;
+            border-radius: 100px;
+            font-size: 11px;
+            font-weight: 600;
+        }
+
+        .pill-present {
+            background: rgba(0, 255, 136, 0.12);
+            color: var(--primary);
+        }
+
+        .pill-absent {
+            background: rgba(255, 68, 68, 0.12);
+            color: #ff4444;
+        }
+
+
+        .form-row {
+            display: grid;
+            grid-template-columns: repeat(auto-fit, minmax(200px, 1fr));
+            gap: 12px;
+            margin-bottom: 14px;
+        }
+
+        .field-group {
+            display: flex;
+            flex-direction: column;
+            gap: 6px;
+        }
+
+        .field-label {
+            font-size: 11px;
+            font-weight: 600;
+            letter-spacing: 0.08em;
+            text-transform: uppercase;
+            color: var(--text-muted);
+        }
+
+        .ifield {
+            padding: 11px 14px;
+            background: var(--input-bg);
+            border: 1px solid var(--input-border);
+            border-radius: 10px;
+            color: var(--text-color);
+            font-family: 'Outfit', sans-serif;
+            font-size: 14px;
+            outline: none;
+            transition: all 0.25s;
+            width: 100%;
+        }
+
+        .ifield:focus {
+            border-color: var(--primary);
+            box-shadow: 0 0 0 3px rgba(0, 255, 136, 0.08);
+        }
+
+        .ifield::placeholder {
+            color: var(--text-muted);
+        }
+
+        .isubmit-btn {
+            padding: 11px 24px;
+            background: linear-gradient(135deg, var(--primary), var(--secondary));
+            color: #020f0a;
+            border: none;
+            border-radius: 10px;
+            font-family: 'Outfit', sans-serif;
+            font-size: 14px;
+            font-weight: 700;
+            cursor: pointer;
+            transition: all 0.3s;
+            width: auto;
+        }
+
+        .isubmit-btn:hover {
+            transform: translateY(-2px);
+            box-shadow: 0 6px 18px rgba(0, 255, 136, 0.3);
+        }
+
+
+        .iitem {
+            background: var(--card);
+            border: 1px solid var(--border-color);
+            border-radius: 12px;
+            padding: 14px 16px;
+            margin-bottom: 10px;
+        }
+
+        .istatus {
+            display: inline-block;
+            padding: 3px 10px;
+            border-radius: 100px;
+            font-size: 11px;
+            font-weight: 700;
+        }
+
+        .s-pending {
+            background: rgba(255, 204, 0, 0.12);
+            color: #ffcc00;
+        }
+
+        .s-approved {
+            background: rgba(0, 255, 136, 0.12);
+            color: #00ff88;
+        }
+
+        .s-rejected {
+            background: rgba(255, 68, 68, 0.12);
+            color: #ff4444;
+        }
+
+        .s-paid {
+            background: rgba(0, 255, 136, 0.12);
+            color: #00ff88;
+        }
+
+        .s-overdue {
+            background: rgba(255, 68, 68, 0.12);
+            color: #ff4444;
+        }
+
+        .s-open {
+            background: rgba(255, 204, 0, 0.12);
+            color: #ffcc00;
+        }
+
+        .s-answered {
+            background: rgba(0, 255, 136, 0.12);
+            color: #00ff88;
+        }
+
+        .s-normal {
+            background: rgba(116, 235, 213, 0.12);
+            color: #74ebd5;
+        }
+
+        .s-important {
+            background: rgba(255, 204, 0, 0.12);
+            color: #ffcc00;
+        }
+
+        .s-urgent {
+            background: rgba(255, 68, 68, 0.12);
+            color: #ff4444;
+        }
+
+
+        #loadingState {
+            text-align: center;
+            padding: 60px 20px;
+            color: var(--text-muted);
+        }
+
+        .spinner {
+            width: 34px;
+            height: 34px;
+            border: 3px solid rgba(0, 255, 136, 0.1);
+            border-top-color: var(--primary);
+            border-radius: 50%;
+            animation: spin 0.8s linear infinite;
+            margin: 0 auto 16px;
+        }
+
+        @keyframes spin {
+            to {
+                transform: rotate(360deg);
+            }
+        }
+
+
+        body.light-mode {
+            color: #111;
+        }
+
+        body.light-mode .sidebar {
+            background: rgba(255, 255, 255, 0.85) !important;
+            border-color: rgba(0, 0, 0, 0.1) !important;
+        }
+
+        body.light-mode .nav-item {
+            color: rgba(0, 0, 0, 0.55) !important;
+        }
+
+        body.light-mode .nav-item:hover {
+            color: #111 !important;
+            background: rgba(0, 0, 0, 0.05) !important;
+        }
+
+        body.light-mode .nav-item.active {
+            color: var(--primary) !important;
+            background: rgba(0, 200, 100, 0.08) !important;
+        }
+
+        body.light-mode .s-info h3 {
+            color: #111 !important;
+        }
+
+        body.light-mode .nav-group-label {
+            color: rgba(0, 0, 0, 0.4) !important;
+        }
+
+        body.light-mode .logout-nav {
+            color: #cc2200 !important;
+        }
+
+        body.light-mode .card,
+        body.light-mode .stat-card,
+        body.light-mode .section,
+        body.light-mode .iitem {
+            background: rgba(0, 0, 0, 0.04) !important;
+            border-color: rgba(0, 0, 0, 0.1) !important;
+        }
+
+        body.light-mode .stat-label,
+        body.light-mode .field-label,
+        body.light-mode .page-header p {
+            color: rgba(0, 0, 0, 0.5) !important;
+        }
+
+        body.light-mode .stat-value,
+        body.light-mode .section-header h2,
+        body.light-mode .card-title,
+        body.light-mode .page-header h1 {
+            color: #111 !important;
+        }
+
+        body.light-mode .ifield {
+            background: rgba(0, 0, 0, 0.05) !important;
+            border-color: rgba(0, 0, 0, 0.15) !important;
+            color: #111 !important;
+        }
+
+        body.light-mode .ifield::placeholder {
+            color: rgba(0, 0, 0, 0.35) !important;
+        }
+
+        body.light-mode table td {
+            color: rgba(0, 0, 0, 0.75) !important;
+            border-color: rgba(0, 0, 0, 0.06) !important;
+        }
+
+        body.light-mode table th {
+            color: rgba(0, 0, 0, 0.4) !important;
+        }
+
+        body.light-mode .no-data {
+            color: rgba(0, 0, 0, 0.35) !important;
+        }
+
+        body.light-mode .insight-card.prediction {
+            background: rgba(0, 200, 100, 0.06) !important;
+        }
+
+        body.light-mode .insight-card.suggestion {
+            background: rgba(200, 150, 0, 0.06) !important;
+        }
+    </style>
+</head>
+
+<body>
+
+
+    <div id="themeWidget"
+        style="position:fixed;top:16px;right:16px;z-index:99999;display:flex;align-items:center;gap:8px;">
+        <button id="modeToggleBtn" onclick="toggleMode()"
+            style="width:38px;height:38px;border-radius:10px;border:1px solid var(--border-color);background:var(--card);color:var(--text-color);font-size:16px;cursor:pointer;display:flex;align-items:center;justify-content:center;backdrop-filter:blur(10px);">🌙</button>
+        <button onclick="togglePicker()"
+            style="width:38px;height:38px;border-radius:10px;border:1px solid var(--border-color);background:var(--card);color:var(--text-color);font-size:16px;cursor:pointer;display:flex;align-items:center;justify-content:center;backdrop-filter:blur(10px);">🎨</button>
+        <div id="colorPicker"
+            style="display:none;background:rgba(10,15,12,0.95);border:1px solid var(--border-color);border-radius:14px;padding:12px;backdrop-filter:blur(20px);box-shadow:0 8px 32px rgba(0,0,0,0.4);">
+            <div
+                style="font-size:10px;font-weight:600;letter-spacing:0.08em;text-transform:uppercase;color:var(--text-muted);margin-bottom:8px;">
+                Theme</div>
+            <div style="display:flex;gap:8px;">
+                <div onclick="setColor('green')"
+                    style="width:26px;height:26px;border-radius:8px;background:#00ff88;cursor:pointer;" title="Emerald">
+                </div>
+                <div onclick="setColor('purple')"
+                    style="width:26px;height:26px;border-radius:8px;background:#a18cd1;cursor:pointer;" title="Purple">
+                </div>
+                <div onclick="setColor('blue')"
+                    style="width:26px;height:26px;border-radius:8px;background:#00d2ff;cursor:pointer;" title="Ocean">
+                </div>
+                <div onclick="setColor('gold')"
+                    style="width:26px;height:26px;border-radius:8px;background:#f5c842;cursor:pointer;" title="Gold">
+                </div>
+                <div onclick="setColor('rose')"
+                    style="width:26px;height:26px;border-radius:8px;background:#ff6b9d;cursor:pointer;" title="Rose">
+                </div>
+            </div>
+        </div>
+    </div>
+
+
+    <div class="sidebar">
+        <div class="sidebar-brand">
+            <div class="student-profile">
+                <div class="s-avatar" id="sidebarAvatar">S</div>
+                <div class="s-info">
+                    <h3 id="sidebarName">Loading...</h3>
+                    <p>Student</p>
+                </div>
+            </div>
+        </div>
+
+        <div class="nav-group-label">Overview</div>
+        <div class="nav-item active" onclick="switchPage('dashboard')" id="nav-dashboard">
+            <span class="nav-icon">📊</span> Dashboard
+        </div>
+
+        <div class="nav-group-label">Interactive</div>
+        <div class="nav-item" onclick="switchPage('leave')" id="nav-leave">
+            <span class="nav-icon">📝</span> Leave Request
+        </div>
+        <div class="nav-item" onclick="switchPage('fees')" id="nav-fees">
+            <span class="nav-icon">💰</span> Fee Payment
+        </div>
+        <div class="nav-item" onclick="switchPage('announce')" id="nav-announce">
+            <span class="nav-icon">📢</span> Notices
+        </div>
+        <div class="nav-item" onclick="switchPage('doubts')" id="nav-doubts">
+            <span class="nav-icon">❓</span> My Doubts
+        </div>
+        <div class="nav-item" onclick="switchPage('materials')" id="nav-materials">
+            <span class="nav-icon">📚</span> Study Materials
+        </div>
+
+        <div class="sidebar-bottom">
+            <div class="logout-nav" onclick="location.href='student-login.html'">
+                <span class="nav-icon">🚪</span> Logout
+            </div>
+        </div>
+    </div>
+
+
+    <div class="main">
+
+
+        <div id="loadingState">
+            <div class="spinner"></div>
+            <p>Loading your dashboard...</p>
+        </div>
+
+
+        <div class="page" id="page-dashboard">
+            <div class="page-header">
+                <h1 id="welcomeName">Welcome back 👋</h1>
+                <p>Here's your academic overview</p>
+            </div>
+
+            <div class="stats-grid">
+                <div class="stat-card att-card">
+                    <div class="stat-label">Attendance</div>
+                    <div class="stat-value att-good" id="attendance">0%</div>
+                    <div class="chart-container"><canvas id="attendanceChart"></canvas></div>
+                </div>
+                <div class="stat-card marks-card">
+                    <div class="stat-label">Avg Marks</div>
+                    <div class="stat-value" id="avgMarks" style="color:var(--secondary);">0.0</div>
+                    <div style="font-size:12px;color:var(--text-muted);margin-top:6px;">out of 100</div>
+                </div>
+                <div class="stat-card alert-card">
+                    <div class="stat-label">Active Alerts</div>
+                    <div class="stat-value" id="alertCount" style="color:#ffcc00;">0</div>
+                    <div style="font-size:12px;color:var(--text-muted);margin-top:6px;">notifications</div>
+                </div>
+            </div>
+
+            <div class="section">
+                <div class="section-header">
+                    <div class="section-icon icon-yellow">🔔</div>
+                    <h2>Notifications</h2>
+                </div>
+                <div id="alertsList">
+                    <p class="no-data">No new notifications</p>
+                </div>
+            </div>
+
+            <div class="section">
+                <div class="section-header">
+                    <div class="section-icon icon-blue">📊</div>
+                    <h2>Performance Analytics</h2>
+                </div>
+                <div id="noMarksMsg" class="no-data" style="display:none;">No marks data yet.</div>
+                <canvas id="marksChart"></canvas>
+            </div>
+
+            <div class="section">
+                <div class="section-header">
+                    <div class="section-icon icon-green">📅</div>
+                    <h2>Attendance History</h2>
+                </div>
+                <div id="attendanceHistory">
+                    <p class="no-data">No records yet.</p>
+                </div>
+            </div>
+
+            <div class="section">
+                <div class="section-header">
+                    <div class="section-icon" style="background:rgba(161,140,209,0.1);">🤖</div>
+                    <h2>Smart Insights</h2>
+                </div>
+                <div class="insights-grid">
+                    <div class="insight-card prediction">
+                        <div class="insight-label">Result Prediction</div>
+                        <div class="insight-text" id="prediction">Analyzing...</div>
+                    </div>
+                    <div class="insight-card suggestion">
+                        <div class="insight-label">AI Suggestion</div>
+                        <div class="insight-text" id="suggestion">Analyzing...</div>
+                    </div>
+                </div>
+            </div>
+        </div>
+
+
+        <div class="page" id="page-leave">
+            <div class="page-header">
+                <h1>📝 Leave Request</h1>
+                <p>Apply for leave and track your requests</p>
+            </div>
+            <div class="card">
+                <div class="card-title">Apply for Leave</div>
+                <div class="form-row">
+                    <div class="field-group"><label class="field-label">From Date</label><input type="date"
+                            id="leaveFrom" class="ifield"></div>
+                    <div class="field-group"><label class="field-label">To Date</label><input type="date" id="leaveTo"
+                            class="ifield"></div>
+                </div>
+                <div class="field-group" style="margin-bottom:14px;">
+                    <label class="field-label">Reason</label>
+                    <textarea id="leaveReason" class="ifield" rows="3" placeholder="Reason for leave..."
+                        style="resize:none;"></textarea>
+                </div>
+                <button class="isubmit-btn" onclick="applyLeave()">📤 Submit Request</button>
+            </div>
+            <div class="card">
+                <div class="card-title">My Leave Requests</div>
+                <div id="leaveList">
+                    <p class="no-data">No leave requests yet.</p>
+                </div>
+            </div>
+        </div>
+
+
+        <div class="page" id="page-fees">
+            <div class="page-header">
+                <h1>💰 Fee Payment</h1>
+                <p>Track your fee payment status</p>
+            </div>
+            <div id="feeList">
+                <p class="no-data">No fee records found.</p>
+            </div>
+        </div>
+
+
+        <div class="page" id="page-announce">
+            <div class="page-header">
+                <h1>📢 Notices & Announcements</h1>
+                <p>Latest updates from your teachers and admin</p>
+            </div>
+            <div id="announceList">
+                <p class="no-data">No announcements yet.</p>
+            </div>
+        </div>
+
+
+        <div class="page" id="page-doubts">
+            <div class="page-header">
+                <h1>❓ My Doubts</h1>
+                <p>Ask questions and get answers from your teachers</p>
+            </div>
+            <div class="card">
+                <div class="card-title">Ask a Question</div>
+                <div class="form-row">
+                    <div class="field-group"><label class="field-label">Subject</label><input type="text"
+                            id="doubtSubject" class="ifield" placeholder="e.g. Maths, Science..."></div>
+                </div>
+                <div class="field-group" style="margin-bottom:14px;">
+                    <label class="field-label">Your Question</label>
+                    <textarea id="doubtQuestion" class="ifield" rows="3" placeholder="Type your question..."
+                        style="resize:none;"></textarea>
+                </div>
+                <button class="isubmit-btn" onclick="submitDoubt()">📤 Ask Question</button>
+            </div>
+            <div class="card">
+                <div class="card-title">My Questions</div>
+                <div id="doubtList">
+                    <p class="no-data">No questions yet.</p>
+                </div>
+            </div>
+        </div>
+
+
+        <div class="page" id="page-materials">
+            <div class="page-header">
+                <h1>📚 Study Materials</h1>
+                <p>Download notes and resources shared by your teachers</p>
+            </div>
+            <div id="materialList">
+                <p class="no-data">No materials uploaded yet.</p>
+            </div>
+        </div>
+
+    </div>
+
+    <script>
+        const BASE = "http://localhost:6060";
+        const urlParams = new URLSearchParams(window.location.search);
+        const studentId = urlParams.get('id');
+
+        if (!studentId) { alert("Session Expired. Please Login."); window.location.href = "student-login.html"; }
+
+        let attendanceChartInstance = null;
+        let marksChartInstance = null;
+
+
+        function switchPage(name) {
+            document.querySelectorAll('.page').forEach(p => p.classList.remove('active'));
+            document.querySelectorAll('.nav-item').forEach(n => n.classList.remove('active'));
+            document.getElementById('page-' + name).classList.add('active');
+            document.getElementById('nav-' + name).classList.add('active');
+            if (name === 'leave') loadLeaves();
+            if (name === 'fees') loadFees();
+            if (name === 'announce') loadAnnouncements();
+            if (name === 'doubts') loadDoubts();
+            if (name === 'materials') loadMaterials();
+        }
+
+
+        async function loadDashboard() {
+            try {
+                const [dashRes, attRes] = await Promise.all([
+                    fetch(BASE + "/dashboard/" + studentId),
+                    fetch(BASE + "/attendance/" + studentId)
+                ]);
+                if (!dashRes.ok) throw new Error();
+                const data = await dashRes.json();
+
+                const name = data.name || "Student";
+                document.getElementById('welcomeName').innerText = "Welcome back, " + name + " 👋";
+                document.getElementById('sidebarName').innerText = name;
+                document.getElementById('sidebarAvatar').innerText = name.charAt(0).toUpperCase();
+                document.getElementById('avgMarks').innerText = (data.averageMarks || 0).toFixed(1);
+                document.getElementById('alertCount').innerText = (data.alerts || []).length;
+
+                const attVal = data.attendancePercentage || 0;
+                const attEl = document.getElementById('attendance');
+                attEl.innerText = attVal.toFixed(1) + "%";
+                attEl.className = 'stat-value ' + (attVal >= 75 ? 'att-good' : attVal >= 60 ? 'att-warning' : 'att-danger');
+                renderAttendanceChart(attVal);
+
+                document.getElementById('prediction').innerText = data.predictedResult || "Analyzing...";
+                document.getElementById('suggestion').innerText = data.subjectSuggestion || "No suggestions yet.";
+
+                const alertsDiv = document.getElementById('alertsList');
+                if (data.alerts && data.alerts.length > 0) {
+                    alertsDiv.innerHTML = data.alerts.map(a => `<div class="alert-item"><strong>⚠️ Alert:</strong> ${a.message}</div>`).join('');
+                } else {
+                    alertsDiv.innerHTML = '<p class="no-data">No new notifications — you are good! ✅</p>';
+                }
+
+                if (data.marksList && data.marksList.length > 0) {
+                    document.getElementById('noMarksMsg').style.display = 'none';
+                    renderMarksChart(data.marksList);
+                } else {
+                    document.getElementById('noMarksMsg').style.display = 'block';
+                }
+
+                if (attRes.ok) {
+                    const attData = await attRes.json();
+                    renderAttendanceHistory(attData);
+                }
+
+                document.getElementById('loadingState').style.display = 'none';
+                document.getElementById('page-dashboard').classList.add('active');
+
+            } catch (err) {
+                document.getElementById('loadingState').innerHTML = '<p style="color:#ff6b6b;">Failed to load. Is the server running?<br><button onclick="loadDashboard()" style="margin-top:12px;padding:8px 16px;background:rgba(255,68,68,0.2);border:1px solid rgba(255,68,68,0.4);color:#ff6b6b;border-radius:8px;cursor:pointer;font-family:Outfit,sans-serif;">Retry</button></p>';
+            }
+        }
+
+        function renderAttendanceChart(percent) {
+            if (attendanceChartInstance) { attendanceChartInstance.destroy(); attendanceChartInstance = null; }
+            const ctx = document.getElementById('attendanceChart').getContext('2d');
+            const color = percent >= 75 ? '#00ff88' : percent >= 60 ? '#ffcc00' : '#ff4444';
+            attendanceChartInstance = new Chart(ctx, {
+                type: 'doughnut',
+                data: { datasets: [{ data: [percent, 100 - percent], backgroundColor: [color, 'rgba(255,255,255,0.06)'], borderWidth: 0 }] },
+                options: { responsive: true, maintainAspectRatio: false, cutout: '78%', plugins: { legend: { display: false }, tooltip: { enabled: false } } }
+            });
+        }
+
+        function renderMarksChart(marksList) {
+            if (marksChartInstance) { marksChartInstance.destroy(); marksChartInstance = null; }
+            const ctx = document.getElementById('marksChart').getContext('2d');
+            const map = {};
+            marksList.forEach(m => { map[m.subject] = m.marks; });
+            const subjects = Object.keys(map);
+            const scores = Object.values(map);
+            marksChartInstance = new Chart(ctx, {
+                type: 'bar',
+                data: { labels: subjects, datasets: [{ label: 'Marks (out of 100)', data: scores, backgroundColor: scores.map(s => s >= 75 ? 'rgba(0,255,136,0.25)' : s >= 40 ? 'rgba(255,204,0,0.25)' : 'rgba(255,68,68,0.25)'), borderColor: scores.map(s => s >= 75 ? '#00ff88' : s >= 40 ? '#ffcc00' : '#ff4444'), borderWidth: 2, borderRadius: 8, borderSkipped: false }] },
+                options: {
+                    responsive: true,
+                    scales: {
+                        y: { beginAtZero: true, max: 100, ticks: { color: 'rgba(255,255,255,0.5)', font: { family: 'Outfit' } }, grid: { color: 'rgba(255,255,255,0.05)' }, border: { display: false } },
+                        x: { ticks: { color: 'rgba(255,255,255,0.6)', font: { family: 'Outfit', size: 13 } }, grid: { display: false }, border: { display: false } }
+                    },
+                    plugins: { legend: { labels: { color: 'rgba(255,255,255,0.5)', font: { family: 'Outfit' } } }, tooltip: { backgroundColor: 'rgba(2,15,10,0.9)', titleFont: { family: 'Outfit' }, bodyFont: { family: 'Outfit' }, callbacks: { label: ctx => ' Score: ' + ctx.raw + '/100 — ' + (ctx.raw >= 75 ? 'Good' : ctx.raw >= 40 ? 'Average' : 'Below Pass') } } }
+                }
+            });
+        }
+
+        function renderAttendanceHistory(records) {
+            const container = document.getElementById('attendanceHistory');
+            if (!records || records.length === 0) { container.innerHTML = '<p class="no-data">No attendance records yet.</p>'; return; }
+            const sorted = records.sort((a, b) => new Date(b.attendanceDate) - new Date(a.attendanceDate)).slice(0, 10);
+            let html = '<table class="att-table"><thead><tr><th>#</th><th>Date</th><th>Status</th></tr></thead><tbody>';
+            sorted.forEach((r, i) => {
+                const dateStr = new Date(r.attendanceDate).toLocaleDateString('en-IN', { day: '2-digit', month: 'short', year: 'numeric' });
+                html += `<tr><td style="color:var(--text-muted)">${i + 1}</td><td>${dateStr}</td><td><span class="pill ${r.status === 'Present' ? 'pill-present' : 'pill-absent'}">${r.status}</span></td></tr>`;
+            });
+            html += '</tbody></table>';
+            if (records.length > 10) html += `<p style="font-size:12px;color:var(--text-muted);text-align:center;margin-top:10px;">Showing latest 10 of ${records.length} records</p>`;
+            container.innerHTML = html;
+        }
+
+
+        async function applyLeave() {
+            const from = document.getElementById('leaveFrom').value;
+            const to = document.getElementById('leaveTo').value;
+            const reason = document.getElementById('leaveReason').value.trim();
+            if (!from || !to || !reason) { showToast('Please fill all fields!', 'error'); return; }
+            try {
+                const res = await fetch(BASE + '/leave', { method: 'POST', headers: { 'Content-Type': 'application/json' }, body: JSON.stringify({ studentId: parseInt(studentId), fromDate: from, toDate: to, reason }) });
+                if (!res.ok) throw new Error();
+                showToast('Leave request submitted!', 'success');
+                document.getElementById('leaveFrom').value = '';
+                document.getElementById('leaveTo').value = '';
+                document.getElementById('leaveReason').value = '';
+                loadLeaves();
+            } catch { showToast('Failed to submit!', 'error'); }
+        }
+
+        async function loadLeaves() {
+            try {
+                const data = await fetch(BASE + '/leave/student/' + studentId).then(r => r.json());
+                const div = document.getElementById('leaveList');
+                if (!data.length) { div.innerHTML = '<p class="no-data">No leave requests yet.</p>'; return; }
+                div.innerHTML = data.map(l => `
+                    <div class="iitem">
+                        <div style="display:flex;justify-content:space-between;align-items:center;margin-bottom:6px;">
+                            <span style="font-size:13px;font-weight:600;">📅 ${l.fromDate} → ${l.toDate}</span>
+                            <span class="istatus s-${l.status.toLowerCase()}">${l.status}</span>
+                        </div>
+                        <div style="font-size:13px;color:var(--text-muted);">${l.reason}</div>
+                        ${l.teacherNote ? '<div style="font-size:12px;color:#74ebd5;margin-top:6px;">Teacher Note: ' + l.teacherNote + '</div>' : ''}
+                    </div>`).join('');
+            } catch { document.getElementById('leaveList').innerHTML = '<p class="no-data">Failed to load.</p>'; }
+        }
+
+
+        async function loadFees() {
+            try {
+                const data = await fetch(BASE + '/fees/student/' + studentId).then(r => r.json());
+                const div = document.getElementById('feeList');
+                if (!data.length) { div.innerHTML = '<p class="no-data">No fee records found.</p>'; return; }
+                const total = data.reduce((s, f) => s + (f.amount || 0), 0);
+                const paid = data.filter(f => f.status === 'PAID').reduce((s, f) => s + (f.amount || 0), 0);
+                div.innerHTML = `
+                    <div style="display:grid;grid-template-columns:repeat(auto-fit,minmax(150px,1fr));gap:12px;margin-bottom:16px;">
+                        <div style="background:rgba(0,255,136,0.06);border:1px solid rgba(0,255,136,0.15);border-radius:12px;padding:14px;text-align:center;">
+                            <div style="font-size:11px;color:var(--text-muted);text-transform:uppercase;letter-spacing:0.08em;margin-bottom:6px;">Total</div>
+                            <div style="font-size:24px;font-weight:700;color:#00ff88;">₹${total}</div>
+                        </div>
+                        <div style="background:rgba(0,210,255,0.06);border:1px solid rgba(0,210,255,0.15);border-radius:12px;padding:14px;text-align:center;">
+                            <div style="font-size:11px;color:var(--text-muted);text-transform:uppercase;letter-spacing:0.08em;margin-bottom:6px;">Paid</div>
+                            <div style="font-size:24px;font-weight:700;color:#00d2ff;">₹${paid}</div>
+                        </div>
+                        <div style="background:rgba(255,68,68,0.06);border:1px solid rgba(255,68,68,0.15);border-radius:12px;padding:14px;text-align:center;">
+                            <div style="font-size:11px;color:var(--text-muted);text-transform:uppercase;letter-spacing:0.08em;margin-bottom:6px;">Pending</div>
+                            <div style="font-size:24px;font-weight:700;color:#ff4444;">₹${total - paid}</div>
+                        </div>
+                    </div>
+                    ${data.map(f => `
+                    <div class="iitem" style="display:flex;justify-content:space-between;align-items:center;">
+                        <div>
+                            <div style="font-size:14px;font-weight:600;">${f.feeType} — ${f.term || ''}</div>
+                            <div style="font-size:12px;color:var(--text-muted);margin-top:3px;">₹${f.amount}</div>
+                        </div>
+                        <span class="istatus s-${f.status.toLowerCase()}">${f.status}</span>
+                    </div>`).join('')}`;
+            } catch { document.getElementById('feeList').innerHTML = '<p class="no-data">Failed to load.</p>'; }
+        }
+
+
+        async function loadAnnouncements() {
+            try {
+                const data = await fetch(BASE + '/announcements').then(r => r.json());
+                const div = document.getElementById('announceList');
+                if (!data.length) { div.innerHTML = '<p class="no-data">No announcements yet.</p>'; return; }
+                div.innerHTML = data.map(a => `
+                    <div class="iitem">
+                        <div style="display:flex;justify-content:space-between;align-items:center;margin-bottom:8px;">
+                            <span style="font-size:14px;font-weight:700;">${a.title}</span>
+                            <span class="istatus s-${a.priority.toLowerCase()}">${a.priority}</span>
+                        </div>
+                        <div style="font-size:13px;color:var(--text-muted);line-height:1.6;">${a.content}</div>
+                        <div style="font-size:11px;color:var(--text-muted);margin-top:8px;opacity:0.6;">Posted by: ${a.postedBy}</div>
+                    </div>`).join('');
+            } catch { document.getElementById('announceList').innerHTML = '<p class="no-data">Failed to load.</p>'; }
+        }
+
+
+        async function submitDoubt() {
+            const subject = document.getElementById('doubtSubject').value.trim();
+            const question = document.getElementById('doubtQuestion').value.trim();
+            if (!subject || !question) { showToast('Please fill subject and question!', 'error'); return; }
+            try {
+                const res = await fetch(BASE + '/doubts', { method: 'POST', headers: { 'Content-Type': 'application/json' }, body: JSON.stringify({ studentId: parseInt(studentId), subject, question }) });
+                if (!res.ok) throw new Error();
+                showToast('Question submitted!', 'success');
+                document.getElementById('doubtSubject').value = '';
+                document.getElementById('doubtQuestion').value = '';
+                loadDoubts();
+            } catch { showToast('Failed to submit!', 'error'); }
+        }
+
+        async function loadDoubts() {
+            try {
+                const data = await fetch(BASE + '/doubts/student/' + studentId).then(r => r.json());
+                const div = document.getElementById('doubtList');
+                if (!data.length) { div.innerHTML = '<p class="no-data">No questions yet.</p>'; return; }
+                div.innerHTML = data.map(d => `
+                    <div class="iitem">
+                        <div style="display:flex;justify-content:space-between;align-items:center;margin-bottom:8px;">
+                            <span style="font-size:13px;font-weight:600;color:var(--primary);">${d.subject}</span>
+                            <span class="istatus s-${d.status.toLowerCase()}">${d.status}</span>
+                        </div>
+                        <div style="font-size:13px;margin-bottom:8px;">Q: ${d.question}</div>
+                        ${d.answer ? '<div style="font-size:13px;color:#74ebd5;background:rgba(116,235,213,0.06);border-left:3px solid #74ebd5;padding:10px;border-radius:0 8px 8px 0;">A: ' + d.answer + '</div>' : '<div style="font-size:12px;color:var(--text-muted);">Awaiting teacher reply...</div>'}
+                    </div>`).join('');
+            } catch { document.getElementById('doubtList').innerHTML = '<p class="no-data">Failed to load.</p>'; }
+        }
+
+
+        async function loadMaterials() {
+            try {
+                const data = await fetch(BASE + '/materials').then(r => r.json());
+                const div = document.getElementById('materialList');
+                if (!data.length) { div.innerHTML = '<p class="no-data">No materials uploaded yet.</p>'; return; }
+                div.innerHTML = data.map(m => `
+                    <div class="iitem" style="display:flex;justify-content:space-between;align-items:center;gap:12px;">
+                        <div>
+                            <div style="font-size:14px;font-weight:600;">${m.title} <span style="font-size:11px;background:rgba(161,140,209,0.12);color:#a18cd1;padding:2px 8px;border-radius:6px;">${m.fileType || 'FILE'}</span></div>
+                            <div style="font-size:12px;color:var(--text-muted);margin-top:3px;">${m.subject} • By ${m.uploadedBy}</div>
+                            ${m.description ? '<div style="font-size:12px;color:var(--text-muted);margin-top:3px;">' + m.description + '</div>' : ''}
+                        </div>
+                        ${m.fileUrl ? '<a href="' + m.fileUrl + '" target="_blank" style="padding:8px 16px;background:rgba(0,255,136,0.1);border:1px solid rgba(0,255,136,0.25);border-radius:8px;color:#00ff88;font-size:12px;font-weight:600;text-decoration:none;white-space:nowrap;flex-shrink:0;">⬇️ Download</a>' : ''}
+                    </div>`).join('');
+            } catch { document.getElementById('materialList').innerHTML = '<p class="no-data">Failed to load.</p>'; }
+        }
+
+
+        function showToast(msg, type) {
+            let t = document.getElementById('toast-notif');
+            if (!t) { t = document.createElement('div'); t.id = 'toast-notif'; document.body.appendChild(t); }
+            t.style.cssText = 'position:fixed;bottom:28px;right:28px;padding:14px 22px;border-radius:12px;font-family:Outfit,sans-serif;font-size:13px;font-weight:600;z-index:9999;';
+            t.style.background = type === 'success' ? '#0a2e1f' : '#2e0a0a';
+            t.style.border = type === 'success' ? '1px solid rgba(0,255,136,0.3)' : '1px solid rgba(255,68,68,0.3)';
+            t.style.color = type === 'success' ? '#00ff88' : '#ff6b6b';
+            t.innerText = (type === 'success' ? '✓  ' : '✕  ') + msg;
+            t.style.display = 'block';
+            clearTimeout(t._t);
+            t._t = setTimeout(() => t.style.display = 'none', 3000);
+        }
+
+ 
+        const THEMES = {
+            green: { primary: '#00ff88', secondary: '#00d2ff', darkBg: 'linear-gradient(135deg,#020f0a,#00332e)', lightBg: '#efffef', cardDark: 'rgba(0,255,136,0.04)', cardLight: 'rgba(0,180,80,0.06)', borderDark: 'rgba(0,255,136,0.15)', borderLight: 'rgba(0,180,80,0.2)' },
+            purple: { primary: '#a18cd1', secondary: '#fbc2eb', darkBg: 'linear-gradient(135deg,#08060f,#1a0f2e)', lightBg: '#f5f0ff', cardDark: 'rgba(161,140,209,0.05)', cardLight: 'rgba(120,80,200,0.06)', borderDark: 'rgba(161,140,209,0.18)', borderLight: 'rgba(120,80,200,0.2)' },
+            blue: { primary: '#00d2ff', secondary: '#3a7bd5', darkBg: 'linear-gradient(135deg,#020a14,#0a1628)', lightBg: '#eef8ff', cardDark: 'rgba(0,210,255,0.04)', cardLight: 'rgba(0,150,220,0.06)', borderDark: 'rgba(0,210,255,0.15)', borderLight: 'rgba(0,150,220,0.2)' },
+            gold: { primary: '#f5c842', secondary: '#ff9500', darkBg: 'linear-gradient(135deg,#0a0800,#1a1000)', lightBg: '#fffbee', cardDark: 'rgba(245,200,66,0.04)', cardLight: 'rgba(200,150,0,0.06)', borderDark: 'rgba(245,200,66,0.15)', borderLight: 'rgba(200,150,0,0.2)' },
+            rose: { primary: '#ff6b9d', secondary: '#ff4757', darkBg: 'linear-gradient(135deg,#0f0608,#1a0810)', lightBg: '#fff0f4', cardDark: 'rgba(255,107,157,0.04)', cardLight: 'rgba(220,60,100,0.06)', borderDark: 'rgba(255,107,157,0.15)', borderLight: 'rgba(220,60,100,0.2)' },
+        };
+        let currentColor = localStorage.getItem('sms_color') || 'green';
+        let currentMode = localStorage.getItem('sms_mode') || 'dark';
+
+        function applyTheme(color, mode) {
+            const t = THEMES[color] || THEMES.green;
+            const isLight = mode === 'light';
+            document.documentElement.style.setProperty('--primary', t.primary);
+            document.documentElement.style.setProperty('--secondary', t.secondary);
+            if (isLight) {
+                document.body.style.background = t.lightBg;
+                document.body.style.color = '#111';
+                document.documentElement.style.setProperty('--card', t.cardLight);
+                document.documentElement.style.setProperty('--border-color', t.borderLight);
+                document.documentElement.style.setProperty('--text-color', '#111');
+                document.documentElement.style.setProperty('--text-muted', 'rgba(0,0,0,0.5)');
+                document.documentElement.style.setProperty('--input-bg', 'rgba(0,0,0,0.05)');
+                document.documentElement.style.setProperty('--input-border', 'rgba(0,0,0,0.15)');
+                document.body.classList.add('light-mode');
+                document.getElementById('modeToggleBtn').innerText = '☀️';
+            } else {
+                document.body.style.background = t.darkBg;
+                document.body.style.color = '#fff';
+                document.documentElement.style.setProperty('--card', t.cardDark);
+                document.documentElement.style.setProperty('--border-color', t.borderDark);
+                document.documentElement.style.setProperty('--text-color', '#fff');
+                document.documentElement.style.setProperty('--text-muted', 'rgba(255,255,255,0.45)');
+                document.documentElement.style.setProperty('--input-bg', 'rgba(255,255,255,0.06)');
+                document.documentElement.style.setProperty('--input-border', 'rgba(255,255,255,0.1)');
+                document.body.classList.remove('light-mode');
+                document.getElementById('modeToggleBtn').innerText = '🌙';
+            }
+            localStorage.setItem('sms_color', color);
+            localStorage.setItem('sms_mode', mode);
+            currentColor = color;
+            currentMode = mode;
+        }
+        function toggleMode() { currentMode = currentMode === 'dark' ? 'light' : 'dark'; applyTheme(currentColor, currentMode); }
+        function setColor(c) { applyTheme(c, currentMode); document.getElementById('colorPicker').style.display = 'none'; }
+        function togglePicker() { const p = document.getElementById('colorPicker'); p.style.display = p.style.display === 'none' ? 'block' : 'none'; }
+        document.addEventListener('click', function (e) { const w = document.getElementById('themeWidget'); if (w && !w.contains(e.target)) document.getElementById('colorPicker').style.display = 'none'; });
+        applyTheme(currentColor, currentMode);
+
+
+        loadDashboard();
+    </script>
+</body>
+
+</html>
